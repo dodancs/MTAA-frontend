@@ -1,4 +1,4 @@
-package com.example.frontend
+package info.moow.cilicat
 
 import androidx.annotation.NonNull;
 import io.flutter.embedding.android.FlutterActivity
