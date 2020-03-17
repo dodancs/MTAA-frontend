@@ -27,12 +27,6 @@ class _SignupFormState extends State<SignupForm> {
 
   String _picture = null;
 
-  dynamic _commnValidation(String value) {
-    if (value.isEmpty) return 'Pole nomôže byť prázdne!';
-
-    return null;
-  }
-
   @override
   Widget build(BuildContext context) {
     return Form(
@@ -50,7 +44,7 @@ class _SignupFormState extends State<SignupForm> {
               _firstname = value;
             },
             validator: (value) {
-              var ret = _commnValidation(value);
+              var ret = commnValidation(value);
               return ret;
             },
           ),
@@ -66,7 +60,7 @@ class _SignupFormState extends State<SignupForm> {
               _lastname = value;
             },
             validator: (value) {
-              var ret = _commnValidation(value);
+              var ret = commnValidation(value);
               return ret;
             },
           ),
@@ -82,7 +76,7 @@ class _SignupFormState extends State<SignupForm> {
               _email = value;
             },
             validator: (value) {
-              var ret = _commnValidation(value);
+              var ret = commnValidation(value);
               if (ret != null) return ret;
               if (!isEmail(value)) return 'E-mailová adresa nespĺňa formát!';
               return null;
@@ -104,7 +98,7 @@ class _SignupFormState extends State<SignupForm> {
               _password = value;
             },
             validator: (value) {
-              var ret = _commnValidation(value);
+              var ret = commnValidation(value);
               if (ret != null) return ret;
               if (value.length < 4)
                 return 'Heslo musí obsahovať aspoň 4 znaky!';
@@ -121,7 +115,7 @@ class _SignupFormState extends State<SignupForm> {
               _passwordAgain = value;
             },
             validator: (value) {
-              var ret = _commnValidation(value);
+              var ret = commnValidation(value);
               if (ret != null) return ret;
               if (value != _password) return 'Heslá sa nezhodujú!';
               return null;
@@ -137,7 +131,9 @@ class _SignupFormState extends State<SignupForm> {
                 style: TextStyle(fontSize: 20, color: Colors.white)),
             color: palette,
             onPressed: () {
-              _form.currentState.validate();
+              if (!_form.currentState.validate()) {
+                return;
+              }
               _form.currentState.save();
               widget.callback(
                   _firstname, _lastname, _email, _password, _picture);

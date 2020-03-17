@@ -11,8 +11,32 @@ class AuthProvider with ChangeNotifier {
   DateTime _expires;
   String _uuid;
   bool _admin;
-  User current_user;
+  User _current_user;
   bool _loggedIn = false;
+
+  bool get isLoggedIn {
+    if (_loggedIn &&
+        _token != null &&
+        _expires != null &&
+        _expires.isAfter(DateTime.now())) {
+      return true;
+    }
+    return false;
+  }
+
+  String get getToken {
+    if (_token != null &&
+        _expires != null &&
+        _expires.isAfter(DateTime.now())) {
+      return _token;
+    } else {
+      return null;
+    }
+  }
+
+  String get getTokenType {
+    return _tokenType;
+  }
 
   Future getUser(String uuid) async {
     http.Response tmp;
@@ -39,7 +63,7 @@ class AuthProvider with ChangeNotifier {
       ];
     }
     if (tmp.statusCode == 200) {
-      current_user = User(
+      _current_user = User(
           uuid: response['uuid'],
           email: response['email'],
           firstname: response['firstname'],
@@ -95,6 +119,8 @@ class AuthProvider with ChangeNotifier {
 
       _loggedIn = true;
 
+      notifyListeners();
+
       return [true];
     } else {
       return [false, response];
@@ -137,5 +163,16 @@ class AuthProvider with ChangeNotifier {
     } else {
       return [false, response];
     }
+  }
+
+  void logout() {
+    _token = null;
+    _tokenType = null;
+    _expires = null;
+    _uuid = null;
+    _admin = false;
+    _current_user = null;
+    _loggedIn = false;
+    notifyListeners();
   }
 }

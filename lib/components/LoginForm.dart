@@ -1,3 +1,4 @@
+import 'package:CiliCat/helpers.dart';
 import 'package:CiliCat/settings.dart';
 import 'package:flutter/material.dart';
 
@@ -34,6 +35,12 @@ class _LoginFormState extends State<LoginForm> {
             onSaved: (value) {
               _email = value;
             },
+            validator: (value) {
+              var ret = commnValidation(value);
+              if (ret != null) return ret;
+              if (!isEmail(value)) return 'E-mailová adresa nespĺňa formát!';
+              return null;
+            },
           ),
           TextFormField(
             decoration: InputDecoration(labelText: 'Password'),
@@ -43,6 +50,10 @@ class _LoginFormState extends State<LoginForm> {
             focusNode: _passwordFocus,
             onSaved: (value) {
               _password = value;
+            },
+            validator: (value) {
+              var ret = commnValidation(value);
+              return ret;
             },
           ),
           SizedBox(
@@ -55,6 +66,9 @@ class _LoginFormState extends State<LoginForm> {
                 style: TextStyle(fontSize: 20, color: Colors.white)),
             color: palette,
             onPressed: () {
+              if (!_form.currentState.validate()) {
+                return;
+              }
               _form.currentState.save();
               widget.callback(_email, _password);
             },

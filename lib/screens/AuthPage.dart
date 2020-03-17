@@ -47,12 +47,7 @@ class _AuthPageState extends State<AuthPage> {
     setState(() {
       _loading = false;
     });
-    if (response[0]) {
-      Navigator.of(context)
-          .pushReplacement(MaterialPageRoute(builder: (BuildContext context) {
-        return HomePage();
-      }));
-    } else {
+    if (!response[0]) {
       showDialog(
           context: context,
           builder: (BuildContext context) => ErrorDialog(response[1]['error']));

@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:CiliCat/components/CatCard.dart';
 
 class HomePage extends StatelessWidget {
+  static const screenRoute = '/';
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(

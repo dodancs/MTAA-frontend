@@ -1,7 +1,10 @@
 import 'package:CiliCat/cat_font_icons.dart';
 import 'package:CiliCat/components/MenuItem.dart';
 import 'package:CiliCat/components/UserMenuCard.dart';
+import 'package:CiliCat/providers/AuthProvider.dart';
+import 'package:CiliCat/screens/HelpPage.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 class MainMenu extends StatelessWidget {
   @override
@@ -20,9 +23,8 @@ class MainMenu extends StatelessWidget {
       icon: CatFont.cat,
       title: 'Naše mačky',
       callback: () {
-        Navigator.pop(context);
-        Navigator.pushNamed(context, '/home');
-        // Navigator.pushReplacementNamed(context, '/');
+        Navigator.popUntil(
+            context, ModalRoute.withName(Navigator.defaultRouteName));
       },
     ));
     items.add(MenuItem(icon: Icons.healing, title: 'Čo nám chýba'));
@@ -32,8 +34,7 @@ class MainMenu extends StatelessWidget {
       title: 'Pomoc',
       callback: () {
         Navigator.pop(context);
-        Navigator.pushNamed(context, '/help');
-        // Navigator.pushReplacementNamed(context, '/help');
+        Navigator.pushNamed(context, HelpPage.screenRoute);
       },
     ));
     items.add(Spacer());
@@ -46,7 +47,7 @@ class MainMenu extends StatelessWidget {
         icon: Icons.exit_to_app,
         title: 'Odhlásiť sa',
         callback: () {
-          Navigator.popUntil(context, ModalRoute.withName('/'));
+          Provider.of<AuthProvider>(context, listen: false).logout();
         },
       ));
     }
