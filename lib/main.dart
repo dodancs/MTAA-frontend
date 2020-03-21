@@ -1,4 +1,5 @@
 import 'package:CiliCat/providers/AuthProvider.dart';
+import 'package:CiliCat/providers/CatsProvider.dart';
 import 'package:CiliCat/screens/AuthPage.dart';
 import 'package:CiliCat/screens/HelpPage.dart';
 import 'package:CiliCat/screens/HomePage.dart';
@@ -14,7 +15,9 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
-        ChangeNotifierProvider.value(value: AuthProvider()),
+        ChangeNotifierProvider<AuthProvider>(
+          create: (_) => AuthProvider(),
+        ),
       ],
       child: Consumer<AuthProvider>(
         builder: (context, auth, _) {
@@ -23,7 +26,9 @@ class MyApp extends StatelessWidget {
             title: 'Čili Cat',
             theme: ThemeData(primarySwatch: palette),
             home: auth.isLoggedIn ? HomePage() : AuthPage(),
-            routes: {HelpPage.screenRoute: (context) => HelpPage()},
+            routes: {
+              HelpPage.screenRoute: (context) => HelpPage(),
+            },
           );
         },
       ),

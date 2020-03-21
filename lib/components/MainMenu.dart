@@ -17,8 +17,10 @@ class MainMenu extends StatelessWidget {
   }
 
   List<Widget> _buildMenu(BuildContext context) {
+    final authProvider = Provider.of<AuthProvider>(context);
+
     List<Widget> items = [];
-    items.add(UserMenuCard());
+    items.add(UserMenuCard(authProvider.getCurrentUser));
     items.add(MenuItem(
       icon: CatFont.cat,
       title: 'Naše mačky',
@@ -27,8 +29,20 @@ class MainMenu extends StatelessWidget {
             context, ModalRoute.withName(Navigator.defaultRouteName));
       },
     ));
-    items.add(MenuItem(icon: Icons.healing, title: 'Čo nám chýba'));
-    items.add(MenuItem(icon: Icons.monetization_on, title: 'Prispejte nám'));
+    items.add(MenuItem(
+      icon: Icons.healing,
+      title: 'Čo nám chýba',
+      callback: () {
+        Navigator.pop(context);
+      },
+    ));
+    items.add(MenuItem(
+      icon: Icons.monetization_on,
+      title: 'Prispejte nám',
+      callback: () {
+        Navigator.pop(context);
+      },
+    ));
     items.add(MenuItem(
       icon: Icons.help,
       title: 'Pomoc',
@@ -38,19 +52,29 @@ class MainMenu extends StatelessWidget {
       },
     ));
     items.add(Spacer());
-    if (true) {
-      items.add(MenuItem(icon: Icons.tune, title: 'Administrácia'));
-    }
-    if (true) {
-      items.add(MenuItem(icon: Icons.person, title: 'Môj profil'));
+    if (authProvider.isAdmin) {
       items.add(MenuItem(
-        icon: Icons.exit_to_app,
-        title: 'Odhlásiť sa',
+        icon: Icons.tune,
+        title: 'Administrácia',
         callback: () {
-          Provider.of<AuthProvider>(context, listen: false).logout();
+          Navigator.pop(context);
         },
       ));
     }
+    items.add(MenuItem(
+      icon: Icons.person,
+      title: 'Môj profil',
+      callback: () {
+        Navigator.pop(context);
+      },
+    ));
+    items.add(MenuItem(
+      icon: Icons.exit_to_app,
+      title: 'Odhlásiť sa',
+      callback: () {
+        Provider.of<AuthProvider>(context, listen: false).logout();
+      },
+    ));
     return items;
   }
 }

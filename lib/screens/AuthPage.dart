@@ -8,7 +8,6 @@ import 'package:CiliCat/components/Loading.dart';
 import 'package:CiliCat/components/LoginForm.dart';
 import 'package:CiliCat/components/SignupForm.dart';
 import 'package:CiliCat/providers/AuthProvider.dart';
-import 'package:CiliCat/screens/HomePage.dart';
 import 'package:CiliCat/settings.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -49,8 +48,9 @@ class _AuthPageState extends State<AuthPage> {
     });
     if (!response[0]) {
       showDialog(
-          context: context,
-          builder: (BuildContext context) => ErrorDialog(response[1]['error']));
+        context: context,
+        builder: (BuildContext context) => ErrorDialog(response[1]['error']),
+      );
     }
   }
 
@@ -67,12 +67,14 @@ class _AuthPageState extends State<AuthPage> {
     });
     if (response[0]) {
       showDialog(
-          context: context,
-          builder: (BuildContext context) => ConfirmEmailDialog());
+        context: context,
+        builder: (BuildContext context) => ConfirmEmailDialog(),
+      );
     } else {
       showDialog(
-          context: context,
-          builder: (BuildContext context) => ErrorDialog(response[1]['error']));
+        context: context,
+        builder: (BuildContext context) => ErrorDialog(response[1]['error']),
+      );
     }
   }
 
@@ -84,84 +86,87 @@ class _AuthPageState extends State<AuthPage> {
         fit: StackFit.expand,
         children: <Widget>[
           Container(
+            decoration: BoxDecoration(
+              image: DecorationImage(
+                  image: AssetImage('assets/images/background.jpg'),
+                  fit: BoxFit.cover),
+            ),
+            child: Container(
               decoration: BoxDecoration(
-                  image: DecorationImage(
-                      image: AssetImage('assets/images/background.jpg'),
-                      fit: BoxFit.cover)),
-              child: Container(
-                decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                        colors: [
-                          palette[300].withOpacity(0.25),
-                          palette[500].withOpacity(0.5)
-                        ],
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                        stops: [0, 1])),
-              )),
+                  gradient: LinearGradient(
+                      colors: [
+                        palette[300].withOpacity(0.25),
+                        palette[500].withOpacity(0.5)
+                      ],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      stops: [0, 1])),
+            ),
+          ),
           Container(
-              width: double.infinity,
-              alignment: Alignment.center,
-              child: SingleChildScrollView(
-                child: Column(
-                  children: <Widget>[
-                    Card(
-                      margin: EdgeInsets.all(20),
-                      shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10)),
-                      child: Container(
-                        padding: EdgeInsets.all(20),
-                        child: Column(
-                          children: <Widget>[
-                            _mode == AuthMode.login
-                                ? Heading1('Prihlásenie')
-                                : Heading1('Registrácia'),
-                            Container(
-                                width: MediaQuery.of(context).size.width * 0.8,
-                                child: Column(
+            width: double.infinity,
+            alignment: Alignment.center,
+            child: SingleChildScrollView(
+              child: Column(
+                children: <Widget>[
+                  Card(
+                    margin: EdgeInsets.all(20),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Container(
+                      padding: EdgeInsets.all(20),
+                      child: Column(
+                        children: <Widget>[
+                          _mode == AuthMode.login
+                              ? Heading1('Prihlásenie')
+                              : Heading1('Registrácia'),
+                          Container(
+                            width: MediaQuery.of(context).size.width * 0.8,
+                            child: Column(
+                              children: <Widget>[
+                                _mode == AuthMode.login
+                                    ? LoginForm((email, password) {
+                                        _login(email, password);
+                                      })
+                                    : SignupForm((firstname, lastname, email,
+                                        password, picture) {
+                                        _signup(firstname, lastname, email,
+                                            password, picture);
+                                      }),
+                                SizedBox(
+                                  height: 20,
+                                ),
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
                                   children: <Widget>[
                                     _mode == AuthMode.login
-                                        ? LoginForm((email, password) {
-                                            _login(email, password);
-                                          })
-                                        : SignupForm((firstname, lastname,
-                                            email, password, picture) {
-                                            _signup(firstname, lastname, email,
-                                                password, picture);
-                                          }),
-                                    SizedBox(
-                                      height: 20,
-                                    ),
-                                    Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.center,
-                                      children: <Widget>[
+                                        ? Text('Ešte nemáte účet? ')
+                                        : Text('Chcete sa prihlásiť? '),
+                                    InkWell(
+                                      child: Text(
                                         _mode == AuthMode.login
-                                            ? Text('Ešte nemáte účet? ')
-                                            : Text('Chcete sa prihlásiť? '),
-                                        InkWell(
-                                          child: Text(
-                                            _mode == AuthMode.login
-                                                ? 'Registrovať sa'
-                                                : 'Prihlásiť sa',
-                                            style:
-                                                TextStyle(color: palette[600]),
-                                          ),
-                                          onTap: () {
-                                            _switchAuthMode();
-                                          },
-                                        )
-                                      ],
+                                            ? 'Registrovať sa'
+                                            : 'Prihlásiť sa',
+                                        style: TextStyle(color: palette[600]),
+                                      ),
+                                      onTap: () {
+                                        _switchAuthMode();
+                                      },
                                     )
                                   ],
-                                ))
-                          ],
-                        ),
+                                )
+                              ],
+                            ),
+                          )
+                        ],
                       ),
-                    )
-                  ],
-                ),
-              )),
+                    ),
+                  )
+                ],
+              ),
+            ),
+          ),
           _loading ? Loading() : Container(),
         ],
       ),

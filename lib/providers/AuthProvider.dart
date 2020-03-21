@@ -10,24 +10,37 @@ class AuthProvider with ChangeNotifier {
   String _tokenType;
   DateTime _expires;
   String _uuid;
-  bool _admin;
+  bool _admin = false;
   User _current_user;
   bool _loggedIn = false;
 
-  bool get isLoggedIn {
-    if (_loggedIn &&
+  bool _isLoggedIn() {
+    return _loggedIn &&
         _token != null &&
         _expires != null &&
-        _expires.isAfter(DateTime.now())) {
+        _expires.isAfter(DateTime.now());
+  }
+
+  bool get isLoggedIn {
+    return _isLoggedIn();
+  }
+
+  bool get isAdmin {
+    if (_isLoggedIn() && _admin) {
       return true;
     }
     return false;
   }
 
+  User get getCurrentUser {
+    if (_isLoggedIn()) {
+      return _current_user;
+    }
+    return null;
+  }
+
   String get getToken {
-    if (_token != null &&
-        _expires != null &&
-        _expires.isAfter(DateTime.now())) {
+    if (_isLoggedIn()) {
       return _token;
     } else {
       return null;
@@ -43,7 +56,9 @@ class AuthProvider with ChangeNotifier {
     try {
       tmp = await http.get(
         Uri.http(API_URL, '/auth/users/' + uuid),
-        headers: {'Authorization': _tokenType + ' ' + _token},
+        headers: {
+          'Authorization': _tokenType + ' ' + _token,
+        },
       );
     } catch (error) {
       print(error);
@@ -63,18 +78,20 @@ class AuthProvider with ChangeNotifier {
       ];
     }
     if (tmp.statusCode == 200) {
+      _admin = response['admin'];
       _current_user = User(
-          uuid: response['uuid'],
-          email: response['email'],
-          firstname: response['firstname'],
-          lastname: response['lastname'],
-          activated: response['activated'],
-          admin: response['admin'],
-          donations: response['donations'],
-          picture: response['picture'],
-          favourites: response['favourites'],
-          created_at: DateTime.parse(response['created_at']),
-          updated_at: DateTime.parse(response['updated_at']));
+        uuid: response['uuid'],
+        email: response['email'],
+        firstname: response['firstname'],
+        lastname: response['lastname'],
+        activated: response['activated'],
+        admin: response['admin'],
+        donations: response['donations'],
+        picture: response['picture'],
+        favourites: response['favourites'],
+        created_at: DateTime.parse(response['created_at']),
+        updated_at: DateTime.parse(response['updated_at']),
+      );
       return [true];
     } else {
       return [false, response];
@@ -84,9 +101,16 @@ class AuthProvider with ChangeNotifier {
   Future login(String email, String password) async {
     http.Response tmp;
     try {
-      tmp = await http.post(Uri.http(API_URL, '/auth/login'),
-          headers: {'Content-Type': 'application/json'},
-          body: json.encode({'email': email, 'password': password}));
+      tmp = await http.post(
+        Uri.http(API_URL, '/auth/login'),
+        headers: {'Content-Type': 'application/json'},
+        body: json.encode(
+          {
+            'email': email,
+            'password': password,
+          },
+        ),
+      );
     } catch (error) {
       print(error);
       return [
@@ -110,7 +134,6 @@ class AuthProvider with ChangeNotifier {
       _expires =
           DateTime.now().add(Duration(seconds: (response['expires'] - 5)));
       _uuid = response['uuid'];
-      _admin = response['admin'];
 
       var status = await getUser(_uuid);
       if (!status[0]) {
@@ -131,15 +154,19 @@ class AuthProvider with ChangeNotifier {
       String password, String picture) async {
     http.Response tmp;
     try {
-      tmp = await http.post(Uri.http(API_URL, '/auth/register'),
-          headers: {'Content-Type': 'application/json'},
-          body: json.encode({
+      tmp = await http.post(
+        Uri.http(API_URL, '/auth/register'),
+        headers: {'Content-Type': 'application/json'},
+        body: json.encode(
+          {
             'firstname': firstname,
             'lastname': lastname,
             'email': email,
             'password': password,
             'picture': picture
-          }));
+          },
+        ),
+      );
     } catch (error) {
       print(error);
       return [

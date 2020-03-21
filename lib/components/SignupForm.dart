@@ -17,6 +17,8 @@ class _SignupFormState extends State<SignupForm> {
   final FocusNode _passwordFocus = FocusNode();
   final FocusNode _passwordAgainFocus = FocusNode();
 
+  bool _enabled = true;
+
   final _form = GlobalKey<FormState>();
 
   String _firstname;
@@ -34,7 +36,10 @@ class _SignupFormState extends State<SignupForm> {
       child: Column(
         children: <Widget>[
           TextFormField(
-            decoration: InputDecoration(labelText: 'Meno'),
+            decoration: InputDecoration(
+              labelText: 'Meno',
+              enabled: _enabled,
+            ),
             keyboardType: TextInputType.text,
             textInputAction: TextInputAction.next,
             onFieldSubmitted: (_) {
@@ -47,9 +52,13 @@ class _SignupFormState extends State<SignupForm> {
               var ret = commnValidation(value);
               return ret;
             },
+            readOnly: !_enabled,
           ),
           TextFormField(
-            decoration: InputDecoration(labelText: 'Priezvisko'),
+            decoration: InputDecoration(
+              labelText: 'Priezvisko',
+              enabled: _enabled,
+            ),
             keyboardType: TextInputType.emailAddress,
             textInputAction: TextInputAction.next,
             focusNode: _lastnameFocus,
@@ -63,9 +72,13 @@ class _SignupFormState extends State<SignupForm> {
               var ret = commnValidation(value);
               return ret;
             },
+            readOnly: !_enabled,
           ),
           TextFormField(
-            decoration: InputDecoration(labelText: 'E-mail'),
+            decoration: InputDecoration(
+              labelText: 'E-mail',
+              enabled: _enabled,
+            ),
             keyboardType: TextInputType.emailAddress,
             textInputAction: TextInputAction.next,
             focusNode: _emailFocus,
@@ -81,9 +94,13 @@ class _SignupFormState extends State<SignupForm> {
               if (!isEmail(value)) return 'E-mailová adresa nespĺňa formát!';
               return null;
             },
+            readOnly: !_enabled,
           ),
           TextFormField(
-            decoration: InputDecoration(labelText: 'Heslo'),
+            decoration: InputDecoration(
+              labelText: 'Heslo',
+              enabled: _enabled,
+            ),
             obscureText: true,
             keyboardType: TextInputType.text,
             textInputAction: TextInputAction.next,
@@ -104,9 +121,13 @@ class _SignupFormState extends State<SignupForm> {
                 return 'Heslo musí obsahovať aspoň 4 znaky!';
               return null;
             },
+            readOnly: !_enabled,
           ),
           TextFormField(
-            decoration: InputDecoration(labelText: 'Heslo znovu'),
+            decoration: InputDecoration(
+              labelText: 'Heslo znovu',
+              enabled: _enabled,
+            ),
             obscureText: true,
             keyboardType: TextInputType.text,
             textInputAction: TextInputAction.done,
@@ -120,6 +141,7 @@ class _SignupFormState extends State<SignupForm> {
               if (value != _password) return 'Heslá sa nezhodujú!';
               return null;
             },
+            readOnly: !_enabled,
           ),
           SizedBox(
             height: 20,
@@ -127,14 +149,25 @@ class _SignupFormState extends State<SignupForm> {
           RaisedButton(
             padding: EdgeInsets.symmetric(vertical: 10, horizontal: 20),
             elevation: 1,
-            child: Text('Registrovať sa',
-                style: TextStyle(fontSize: 20, color: Colors.white)),
+            child: Text(
+              'Registrovať sa',
+              style: TextStyle(fontSize: 20, color: Colors.white),
+            ),
             color: palette,
             onPressed: () {
+              setState(() {
+                _enabled = false;
+              });
               if (!_form.currentState.validate()) {
+                setState(() {
+                  _enabled = true;
+                });
                 return;
               }
               _form.currentState.save();
+              setState(() {
+                _enabled = true;
+              });
               widget.callback(
                   _firstname, _lastname, _email, _password, _picture);
             },
