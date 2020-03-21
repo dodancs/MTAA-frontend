@@ -1,8 +1,9 @@
+import 'package:CiliCat/components/ShimmerImage.dart';
 import 'package:CiliCat/settings.dart';
 import 'package:flutter/material.dart';
 
 class CatCard extends StatelessWidget {
-  final Image coverImage;
+  final ShimmerImage coverImage;
   final String name, description;
   final int age;
 
@@ -36,7 +37,15 @@ class CatCard extends StatelessWidget {
                     Container(
                       width: double.infinity,
                       margin: EdgeInsets.fromLTRB(0, 8, 0, 8),
-                      child: Text(this.description),
+                      child: RichText(
+                        maxLines: 3,
+                        text: TextSpan(
+                          text: this.description,
+                          style: DefaultTextStyle.of(context).style,
+                        ),
+                        softWrap: true,
+                        overflow: TextOverflow.fade,
+                      ),
                     ),
                     Row(
                       children: <Widget>[

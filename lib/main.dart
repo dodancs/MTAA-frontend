@@ -18,6 +18,10 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider<AuthProvider>(
           create: (_) => AuthProvider(),
         ),
+        ChangeNotifierProxyProvider<AuthProvider, CatsProvider>(
+          create: (_) => CatsProvider(),
+          update: (_, auth, cats) => cats..update(auth),
+        ),
       ],
       child: Consumer<AuthProvider>(
         builder: (context, auth, _) {
