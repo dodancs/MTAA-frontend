@@ -33,25 +33,31 @@ class CatsProvider with ChangeNotifier {
     } catch (_) {
       return [
         false,
-        {'error': 'Nastala serverová chyba'}
+        {'error': 'Nastala serverová chyba'},
       ];
     }
 
     if (tmp.statusCode == 200) {
       for (dynamic cat in response['cats']) {
         if (cat != null) {
-          _cats.add(Cat(
-            uuid: cat['uuid'],
-            name: cat['name'],
-            age: cat['age'],
-            sex: cat['sex'] ? Sex.female : Sex.male,
-            description: cat['description'],
-            adoptive: cat['adoptive'],
-            pictures: List<String>.from(cat['pictures']),
-          ));
+          _cats.add(
+            Cat(
+              uuid: cat['uuid'],
+              name: cat['name'],
+              age: cat['age'],
+              sex: cat['sex'] ? Sex.female : Sex.male,
+              description: cat['description'],
+              adoptive: cat['adoptive'],
+              pictures: List<String>.from(cat['pictures']),
+            ),
+          );
         }
       }
     }
+  }
+
+  Future<Cat> catDetails(Cat cat) async {
+    return cat;
   }
 
   void update(AuthProvider auth) async {

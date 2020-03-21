@@ -1,24 +1,29 @@
 import 'package:CiliCat/components/ShimmerImage.dart';
+import 'package:CiliCat/models/Cat.dart';
 import 'package:CiliCat/settings.dart';
 import 'package:flutter/material.dart';
 
 class CatCard extends StatelessWidget {
-  final ShimmerImage coverImage;
-  final String name, description;
-  final int age;
+  final Cat cat;
+  CatCard(this.cat);
 
-  CatCard({this.coverImage, this.name, this.description, this.age});
+  void _onTap(BuildContext context) {}
 
   @override
   Widget build(BuildContext context) {
-    return InkWell(
-      child: Container(
-        width: double.infinity,
-        child: Card(
-          margin: EdgeInsets.all(16),
+    return Container(
+      width: double.infinity,
+      child: Card(
+        margin: EdgeInsets.all(16),
+        child: InkWell(
+          onTap: () => _onTap(context),
           child: Column(
             children: <Widget>[
-              this.coverImage,
+              ShimmerImage(
+                picture: cat.pictures[0],
+                width: double.infinity,
+                height: MediaQuery.of(context).size.width * 0.9,
+              ),
               Container(
                 margin: EdgeInsets.all(20),
                 child: Column(
@@ -27,11 +32,11 @@ class CatCard extends StatelessWidget {
                       children: <Widget>[
                         Expanded(
                             child: Text(
-                          this.name,
+                          cat.name,
                           style: TextStyle(
                               fontWeight: FontWeight.bold, fontSize: 20),
                         )),
-                        Text(this.age.toString() + ' mesiacov')
+                        Text(cat.age.toString() + ' mesiacov')
                       ],
                     ),
                     Container(
@@ -40,7 +45,7 @@ class CatCard extends StatelessWidget {
                       child: RichText(
                         maxLines: 3,
                         text: TextSpan(
-                          text: this.description,
+                          text: cat.description,
                           style: DefaultTextStyle.of(context).style,
                         ),
                         softWrap: true,
@@ -84,8 +89,8 @@ class CatCard extends StatelessWidget {
               ),
             ],
           ),
-          elevation: 6,
         ),
+        elevation: 6,
       ),
     );
   }

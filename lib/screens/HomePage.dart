@@ -1,9 +1,7 @@
 import 'package:CiliCat/components/AppTitle.dart';
 import 'package:CiliCat/components/MainMenu.dart';
-import 'package:CiliCat/components/ShimmerImage.dart';
 import 'package:CiliCat/models/Cat.dart';
 import 'package:CiliCat/settings.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:CiliCat/components/CatCard.dart';
 import 'package:provider/provider.dart';
@@ -25,16 +23,7 @@ class HomePage extends StatelessWidget {
         children: <Widget>[
           ...cats.map<Widget>(
             (Cat c) {
-              return CatCard(
-                name: c.name,
-                age: c.age,
-                description: c.description,
-                coverImage: ShimmerImage(
-                  picture: c.pictures[0],
-                  width: double.infinity,
-                  height: MediaQuery.of(context).size.width * 0.9,
-                ),
-              );
+              return CatCard(c);
             },
           )
         ],
