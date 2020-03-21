@@ -43,10 +43,10 @@ class _AuthPageState extends State<AuthPage> {
     });
     var response = await Provider.of<AuthProvider>(context, listen: false)
         .login(email, password);
-    setState(() {
-      _loading = false;
-    });
     if (!response[0]) {
+      setState(() {
+        _loading = false;
+      });
       showDialog(
         context: context,
         builder: (BuildContext context) => ErrorDialog(response[1]['error']),

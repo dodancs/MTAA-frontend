@@ -3,6 +3,7 @@ import 'package:CiliCat/providers/CatsProvider.dart';
 import 'package:CiliCat/screens/AuthPage.dart';
 import 'package:CiliCat/screens/HelpPage.dart';
 import 'package:CiliCat/screens/HomePage.dart';
+import 'package:CiliCat/screens/SplashScreen.dart';
 import 'package:CiliCat/settings.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -29,7 +30,15 @@ class MyApp extends StatelessWidget {
             debugShowCheckedModeBanner: false,
             title: 'Čili Cat',
             theme: ThemeData(primarySwatch: palette),
-            home: auth.isLoggedIn ? HomePage() : AuthPage(),
+            home: auth.isLoggedIn
+                ? HomePage()
+                : FutureBuilder(
+                    future: auth.tryAutoLogin(),
+                    builder: (context, result) =>
+                        result.connectionState == ConnectionState.waiting
+                            ? SplashScreen()
+                            : AuthPage(),
+                  ),
             routes: {
               HelpPage.screenRoute: (context) => HelpPage(),
             },

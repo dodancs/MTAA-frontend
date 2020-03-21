@@ -1,9 +1,11 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:CiliCat/models/User.dart';
 import 'package:http/http.dart' as http;
 import 'package:CiliCat/settings.dart';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class AuthProvider with ChangeNotifier {
   String _token;
@@ -13,6 +15,7 @@ class AuthProvider with ChangeNotifier {
   bool _admin = false;
   User _current_user;
   bool _loggedIn = false;
+  Timer _tokenTimer;
 
   bool _isLoggedIn() {
     return _loggedIn &&
@@ -64,7 +67,7 @@ class AuthProvider with ChangeNotifier {
       print(error);
       return [
         false,
-        {'error': 'Nie je možné pripojiť sa na server'}
+        {'error': 'Nie je možné pripojiť sa na server'},
       ];
     }
 
@@ -74,7 +77,7 @@ class AuthProvider with ChangeNotifier {
     } catch (_) {
       return [
         false,
-        {'error': 'Nastala serverová chyba'}
+        {'error': 'Nastala serverová chyba'},
       ];
     }
     if (tmp.statusCode == 200) {
@@ -88,13 +91,16 @@ class AuthProvider with ChangeNotifier {
         admin: response['admin'],
         donations: response['donations'],
         picture: response['picture'],
-        favourites: response['favourites'],
+        favourites: List<String>.from(response['favourites']),
         created_at: DateTime.parse(response['created_at']),
         updated_at: DateTime.parse(response['updated_at']),
       );
       return [true];
     } else {
-      return [false, response];
+      return [
+        false,
+        response,
+      ];
     }
   }
 
@@ -115,7 +121,7 @@ class AuthProvider with ChangeNotifier {
       print(error);
       return [
         false,
-        {'error': 'Nie je možné pripojiť sa na server'}
+        {'error': 'Nie je možné pripojiť sa na server'},
       ];
     }
     var response;
@@ -124,7 +130,7 @@ class AuthProvider with ChangeNotifier {
     } catch (_) {
       return [
         false,
-        {'error': 'Nastala serverová chyba'}
+        {'error': 'Nastala serverová chyba'},
       ];
     }
     if (tmp.statusCode == 200) {
@@ -142,7 +148,19 @@ class AuthProvider with ChangeNotifier {
 
       _loggedIn = true;
 
+      _refreshToken();
       notifyListeners();
+
+      final preferences = await SharedPreferences.getInstance();
+      await preferences.setString(
+        'auth',
+        json.encode({
+          'token': _token,
+          'tokenType': _tokenType,
+          'expires': _expires.toIso8601String(),
+          ..._current_user.toJson(),
+        }),
+      );
 
       return [true];
     } else {
@@ -163,7 +181,7 @@ class AuthProvider with ChangeNotifier {
             'lastname': lastname,
             'email': email,
             'password': password,
-            'picture': picture
+            'picture': picture,
           },
         ),
       );
@@ -181,18 +199,21 @@ class AuthProvider with ChangeNotifier {
       } catch (_) {
         return [
           false,
-          {'error': 'Nastala serverová chyba'}
+          {'error': 'Nastala serverová chyba'},
         ];
       }
     }
     if (tmp.statusCode == 200) {
       return [true];
     } else {
-      return [false, response];
+      return [
+        false,
+        response,
+      ];
     }
   }
 
-  void logout() {
+  Future<void> logout() async {
     _token = null;
     _tokenType = null;
     _expires = null;
@@ -200,6 +221,42 @@ class AuthProvider with ChangeNotifier {
     _admin = false;
     _current_user = null;
     _loggedIn = false;
+    if (_tokenTimer != null) {
+      _tokenTimer.cancel();
+      _tokenTimer = null;
+    }
+    final preferences = await SharedPreferences.getInstance();
+    await preferences.setString('auth', null);
     notifyListeners();
+  }
+
+  Future<bool> tryAutoLogin() async {
+    final preferences = await SharedPreferences.getInstance();
+    if (!preferences.containsKey('auth')) {
+      return false;
+    }
+    final data = json.decode(preferences.getString('auth'));
+    if (DateTime.parse(data['expires']).isBefore(DateTime.now())) {
+      return false;
+    }
+
+    _token = data['token'];
+    _tokenType = data['tokenType'];
+    _expires = DateTime.parse(data['expires']);
+    _current_user = User.fromJson(data);
+    _admin = _current_user.admin;
+
+    _loggedIn = true;
+    _refreshToken();
+    notifyListeners();
+    return true;
+  }
+
+  void _refreshToken() {
+    if (_tokenTimer != null) {
+      _tokenTimer.cancel();
+    }
+    final expires = _expires.difference(DateTime.now()).inSeconds;
+    _tokenTimer = Timer(Duration(seconds: expires), () {});
   }
 }
