@@ -48,6 +48,7 @@ class _HomePageState extends State<HomePage> {
 
   Future<Null> _refresh() async {
     _refreshKey.currentState?.show(atTop: false);
+    canHaveMoreCats = true;
     await Provider.of<CatsProvider>(context, listen: false).getCats();
   }
 
