@@ -20,6 +20,6 @@ class CatFont {
 
   static const _kFontFam = 'CatFont';
 
+  static const IconData cat = IconData(0xe800, fontFamily: _kFontFam);
   static const IconData try_out = IconData(0xe801, fontFamily: _kFontFam);
-  static const IconData cat = IconData(0xe802, fontFamily: _kFontFam);
 }
