@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-const API_URL = "192.168.0.172:5000";
+const API_URL = "185.160.111.248:30005";
 
 const MaterialColor palette = MaterialColor(
   0xffF1BB87,
