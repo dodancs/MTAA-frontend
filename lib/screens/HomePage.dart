@@ -1,5 +1,5 @@
 import 'package:CiliCat/components/AdoptionToggle.dart';
-import 'package:CiliCat/components/AppTitle.dart';
+import 'package:CiliCat/components/AppTitleRefresh.dart';
 import 'package:CiliCat/components/FilterDialog.dart';
 import 'package:CiliCat/components/MainMenu.dart';
 import 'package:CiliCat/settings.dart';
@@ -27,6 +27,7 @@ class _HomePageState extends State<HomePage> {
   @override
   void initState() {
     super.initState();
+    canHaveMoreCats = true;
     _scrollController = new ScrollController()..addListener(_scrollListener);
   }
 
@@ -41,15 +42,17 @@ class _HomePageState extends State<HomePage> {
         _scrollController.position.maxScrollExtent) {
       canHaveMoreCats =
           await Provider.of<CatsProvider>(context, listen: false).moreCats();
-      // print('More cats? ' + (canHaveMoreCats ? 'Yessss!!!' : 'No!'));
+      print('More cats? ' + (canHaveMoreCats ? 'Yessss!!!' : 'No!'));
       setState(() {});
     }
   }
 
   Future<Null> _refresh() async {
     _refreshKey.currentState?.show(atTop: false);
-    canHaveMoreCats = true;
     await Provider.of<CatsProvider>(context, listen: false).getCats();
+    setState(() {
+      canHaveMoreCats = true;
+    });
   }
 
   @override
@@ -58,8 +61,12 @@ class _HomePageState extends State<HomePage> {
     final cats = catsProvider.cats;
     final authProvider = Provider.of<AuthProvider>(context);
 
+    if (cats.length == 0) {
+      canHaveMoreCats = false;
+    }
+
     return Scaffold(
-      appBar: AppTitle(),
+      appBar: AppTitleRefresh(_refresh),
       drawer: MainMenu(),
       body: RefreshIndicator(
         key: _refreshKey,
@@ -77,9 +84,10 @@ class _HomePageState extends State<HomePage> {
                 child: Row(
                   children: <Widget>[
                     AdoptionToggle(
-                      state: true,
+                      state: catsProvider.filter_adoptive,
                       callback: (state) {
-                        print('Current state is: $state');
+                        Provider.of<CatsProvider>(context, listen: false)
+                            .setFilter('adoptive', state);
                       },
                     ),
                     Spacer(),
@@ -96,20 +104,32 @@ class _HomePageState extends State<HomePage> {
                   ],
                 ),
               );
+            } else if (i == 1 && cats.length == 0) {
+              return Padding(
+                padding: EdgeInsets.all(40),
+                child: Center(
+                  child: Text('Žiadne výsledky'),
+                ),
+              );
             } else if (i > 0 && i <= cats.length) {
               return Container(
-                child: CatCard(cats[i - 1]),
+                child: CatCard(
+                    cats[i - 1],
+                    authProvider.getCurrentUser.favourites
+                        .contains(cats[i - 1].uuid)),
               );
             }
             // Loading indicator
             if (i == cats.length + 1 && canHaveMoreCats) {
               return Container(
                 child: Padding(
-                  padding: EdgeInsets.all(40),
+                  padding: EdgeInsets.symmetric(vertical: 80),
                   child: SpinKitChasingDots(color: palette),
                 ),
               );
             }
+
+            return Container();
           },
         ),
         onRefresh: _refresh,

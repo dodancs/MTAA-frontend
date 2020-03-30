@@ -23,6 +23,7 @@ class Cat {
   String health_log;
   bool adoptive;
   List<String> pictures;
+  int commentsNum;
 
   Cat({
     @required this.uuid,
@@ -32,6 +33,7 @@ class Cat {
     @required this.description,
     @required this.adoptive,
     @required this.pictures,
+    @required this.commentsNum,
     this.breed,
     this.health_status,
     this.castrated,

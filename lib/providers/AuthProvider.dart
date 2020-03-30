@@ -332,4 +332,8 @@ class AuthProvider with ChangeNotifier {
       },
     );
   }
+
+  Future<void> refreshUser() async {
+    await getUser(_uuid);
+  }
 }

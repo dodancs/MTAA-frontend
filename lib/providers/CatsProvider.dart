@@ -9,15 +9,35 @@ import 'package:flutter/material.dart';
 class CatsProvider with ChangeNotifier {
   AuthProvider _auth;
   List<Cat> _cats;
-  String _limit = '5';
-  String _page = '1';
+  int _limit = 5;
+  int _page = 1;
+
+  bool filter_adoptive = true;
+
+  Map<String, String> filter({int page}) {
+    return {
+      'limit': _limit.toString(),
+      'page': page == null ? _page.toString() : page.toString(),
+      'adoptive': filter_adoptive.toString()
+    };
+  }
+
+  Future<void> setFilter(String filter, dynamic value) async {
+    switch (filter) {
+      case 'adoptive':
+        filter_adoptive = value;
+        break;
+      default:
+    }
+    await getCats();
+  }
 
   List<Cat> get cats {
     return [..._cats];
   }
 
   Future getCats() async {
-    _page = '1';
+    _page = 1;
     _cats = List<Cat>();
 
     http.Response tmp;
@@ -26,10 +46,7 @@ class CatsProvider with ChangeNotifier {
         Uri.http(
           API_URL,
           '/cats',
-          {
-            'limit': _limit,
-            'page': _page,
-          },
+          filter(),
         ),
         headers: {
           'Authorization': _auth.getTokenType + ' ' + _auth.getToken,
@@ -61,6 +78,7 @@ class CatsProvider with ChangeNotifier {
             description: cat['description'],
             adoptive: cat['adoptive'],
             pictures: List<String>.from(cat['pictures']),
+            commentsNum: cat['comments'],
           ),
         );
       }
@@ -69,7 +87,7 @@ class CatsProvider with ChangeNotifier {
   }
 
   Future<bool> moreCats() async {
-    String newPage = (int.parse(_page) + 1).toString();
+    int newPage = _page + 1;
 
     http.Response tmp;
     try {
@@ -77,10 +95,7 @@ class CatsProvider with ChangeNotifier {
         Uri.http(
           API_URL,
           '/cats',
-          {
-            'limit': _limit,
-            'page': newPage,
-          },
+          filter(page: newPage),
         ),
         headers: {
           'Authorization': _auth.getTokenType + ' ' + _auth.getToken,
@@ -113,6 +128,7 @@ class CatsProvider with ChangeNotifier {
             description: cat['description'],
             adoptive: cat['adoptive'],
             pictures: List<String>.from(cat['pictures']),
+            commentsNum: cat['comments'],
           ),
         );
       }
@@ -127,6 +143,30 @@ class CatsProvider with ChangeNotifier {
 
   Future<Cat> catDetails(Cat cat) async {
     return cat;
+  }
+
+  Future<void> like(Cat cat, bool liked) async {
+    String request = '/cats/' + cat.uuid + '/';
+    if (liked) {
+      request += 'unlike';
+    } else {
+      request += 'like';
+    }
+    try {
+      http.Response tmp = await http.post(
+        Uri.http(
+          API_URL,
+          request,
+        ),
+        headers: {
+          'Authorization': _auth.getTokenType + ' ' + _auth.getToken,
+        },
+      );
+    } catch (error) {
+      print(error);
+    }
+    await _auth.refreshUser();
+    notifyListeners();
   }
 
   void update(AuthProvider auth) async {

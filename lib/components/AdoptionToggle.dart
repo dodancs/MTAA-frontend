@@ -20,20 +20,24 @@ class _AdoptionToggleState extends State<AdoptionToggle> {
           MaterialButton(
             child: Text('NA ADOPCIU'),
             onPressed: () {
+              if (!widget.state) {
+                widget.callback(true);
+              }
               setState(() {
                 widget.state = true;
               });
-              widget.callback(widget.state);
             },
             color: widget.state ? palette : Colors.white,
           ),
           MaterialButton(
             child: Text('VŠETKY'),
             onPressed: () {
+              if (widget.state) {
+                widget.callback(false);
+              }
               setState(() {
                 widget.state = false;
               });
-              widget.callback(widget.state);
             },
             color: !widget.state ? palette : Colors.white,
           ),
