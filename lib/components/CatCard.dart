@@ -113,8 +113,16 @@ class CatCard extends StatelessWidget {
                           ),
                           Spacer(),
                           MaterialButton(
-                            onPressed: null,
-                            child: Text('Adoptovať'),
+                            onPressed: () {},
+                            child: Row(
+                              children: <Widget>[
+                                Icon(CatFont.cat),
+                                Padding(
+                                  padding: EdgeInsets.only(left: 8),
+                                  child: Text('Adoptovať'),
+                                ),
+                              ],
+                            ),
                           )
                         ],
                       ),

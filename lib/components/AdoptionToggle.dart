@@ -1,3 +1,4 @@
+import 'package:CiliCat/cat_font_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:CiliCat/settings.dart';
 
@@ -18,7 +19,15 @@ class _AdoptionToggleState extends State<AdoptionToggle> {
       child: Row(
         children: <Widget>[
           MaterialButton(
-            child: Text('NA ADOPCIU'),
+            child: Row(
+              children: <Widget>[
+                Icon(CatFont.try_out),
+                Padding(
+                  padding: EdgeInsets.only(left: 8),
+                  child: Text('NA ADOPCIU'),
+                ),
+              ],
+            ),
             onPressed: () {
               if (!widget.state) {
                 widget.callback(true);
