@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:CiliCat/settings.dart';
 
 class AppTitleRefresh extends StatelessWidget with PreferredSizeWidget {
   Function _callback;
@@ -8,7 +9,7 @@ class AppTitleRefresh extends StatelessWidget with PreferredSizeWidget {
   @override
   Widget build(BuildContext context) {
     return AppBar(
-      title: Text('ČiliCat',
+      title: Text(APP_TITLE,
           style: TextStyle(
             fontFamily: 'Amatic SC',
             fontWeight: FontWeight.bold,

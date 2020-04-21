@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:CiliCat/settings.dart';
 
 class AppTitle extends StatelessWidget with PreferredSizeWidget {
   @override
   Widget build(BuildContext context) {
     return AppBar(
-      title: Text('ČiliCat',
+      title: Text(APP_TITLE,
           style: TextStyle(
             fontFamily: 'Amatic SC',
             fontWeight: FontWeight.bold,

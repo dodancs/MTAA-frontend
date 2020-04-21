@@ -3,16 +3,11 @@ import 'package:CiliCat/models/Colour.dart';
 import 'package:CiliCat/models/HealthStatus.dart';
 import 'package:flutter/foundation.dart';
 
-enum Sex {
-  male,
-  female,
-}
-
 class Cat {
   String uuid;
   String name;
   int age;
-  Sex sex;
+  String sex;
   Breed breed;
   HealthStatus health_status;
   bool castrated;

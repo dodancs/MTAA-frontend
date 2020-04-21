@@ -2,6 +2,10 @@ import 'package:CiliCat/components/AdoptionToggle.dart';
 import 'package:CiliCat/components/AppTitleRefresh.dart';
 import 'package:CiliCat/components/FilterDialog.dart';
 import 'package:CiliCat/components/MainMenu.dart';
+import 'package:CiliCat/models/Breed.dart';
+import 'package:CiliCat/models/Colour.dart';
+import 'package:CiliCat/models/HealthStatus.dart';
+import 'package:CiliCat/providers/SettingsProvider.dart';
 import 'package:CiliCat/settings.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -55,11 +59,58 @@ class _HomePageState extends State<HomePage> {
     });
   }
 
+  Future<void> _filterUpdate(Map<String, dynamic> settings,
+      CatsProvider catsProvider, SettingsProvider settingsProvider) async {
+    Map<String, dynamic> map = {
+      'sex': settings['sex'] == null
+          ? null
+          : settings['sex'] == sexes[0] ? true : false,
+      'breed': settingsProvider.breedIdFromName(settings['breed']),
+      'colour': settingsProvider.colourIdFromName(settings['colour']),
+      'health_status':
+          settingsProvider.healthStatusIdFromName(settings['health_status']),
+      'vaccinated': settings['vaccinated'] == null
+          ? null
+          : settings['vaccinated'] == bools[0] ? false : true,
+      'castrated': settings['castrated'] == null
+          ? null
+          : settings['castrated'] == bools[0] ? false : true,
+      'dewormed': settings['dewormed'] == null
+          ? null
+          : settings['dewormed'] == bools[0] ? false : true,
+      'age_up': settings['age_up'],
+      'age_down': settings['age_down'],
+    };
+
+    await catsProvider.setFilter(map: map);
+
+    print('Changing filters: ' + settings.toString());
+  }
+
   @override
   Widget build(BuildContext context) {
+    final authProvider = Provider.of<AuthProvider>(context);
     final catsProvider = Provider.of<CatsProvider>(context);
     final cats = catsProvider.cats;
-    final authProvider = Provider.of<AuthProvider>(context);
+    final settingsProvider = Provider.of<SettingsProvider>(context);
+
+    List<String> breeds = [
+      ...settingsProvider.breeds.map((Breed b) {
+        return b.name;
+      }),
+    ];
+
+    List<String> colours = [
+      ...settingsProvider.colours.map((Colour c) {
+        return c.name;
+      }),
+    ];
+
+    List<String> health_statuses = [
+      ...settingsProvider.healthStatuses.map((HealthStatus h) {
+        return h.name;
+      }),
+    ];
 
     if (cats.length == 0) {
       canHaveMoreCats = false;
@@ -87,7 +138,7 @@ class _HomePageState extends State<HomePage> {
                       state: catsProvider.filter_adoptive,
                       callback: (state) {
                         Provider.of<CatsProvider>(context, listen: false)
-                            .setFilter('adoptive', state);
+                            .setFilter(filter: 'adoptive', value: state);
                       },
                     ),
                     Spacer(),
@@ -96,7 +147,46 @@ class _HomePageState extends State<HomePage> {
                       onPressed: () {
                         showDialog(
                           context: context,
-                          builder: (BuildContext context) => FilterDialog(),
+                          builder: (BuildContext context) => FilterDialog(
+                            breeds: breeds,
+                            colours: colours,
+                            health_statuses: health_statuses,
+                            currentSex: catsProvider.filter_sex == null
+                                ? null
+                                : catsProvider.filter_sex ? sexes[0] : sexes[1],
+                            currentBreed: settingsProvider
+                                .breedNameFromId(catsProvider.filter_breed),
+                            currentColour: settingsProvider
+                                .colourNameFromId(catsProvider.filter_colour),
+                            currentHealthStatus:
+                                settingsProvider.healthStatusNameFromId(
+                                    catsProvider.filter_health_status),
+                            currentVaccinated:
+                                catsProvider.filter_vaccinated == null
+                                    ? null
+                                    : catsProvider.filter_vaccinated
+                                        ? bools[1]
+                                        : bools[0],
+                            currentCastrated:
+                                catsProvider.filter_castrated == null
+                                    ? null
+                                    : catsProvider.filter_castrated
+                                        ? bools[1]
+                                        : bools[0],
+                            currentDewormed:
+                                catsProvider.filter_dewormed == null
+                                    ? null
+                                    : catsProvider.filter_dewormed
+                                        ? bools[1]
+                                        : bools[0],
+                            currentAge: RangeValues(
+                                catsProvider.filter_age_down.toDouble(),
+                                catsProvider.filter_age_up.toDouble()),
+                            onUpdate: (Map<String, dynamic> map) {
+                              this._filterUpdate(
+                                  map, catsProvider, settingsProvider);
+                            },
+                          ),
                         );
                       },
                       color: palette,

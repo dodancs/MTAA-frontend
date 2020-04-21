@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 
 const API_URL = "185.160.111.248:30005";
 
+const APP_TITLE = 'Čili Cat';
+
 const MaterialColor palette = MaterialColor(
   0xffF1BB87,
   const <int, Color>{
@@ -17,3 +19,13 @@ const MaterialColor palette = MaterialColor(
     900: const Color(0xffF1BB87),
   },
 );
+
+const List<String> sexes = [
+  'Mačka',
+  'Kocúr',
+];
+
+const List<String> bools = [
+  'Nie',
+  'Áno',
+];

@@ -1,4 +1,5 @@
 import 'package:CiliCat/providers/AuthProvider.dart';
+import 'package:CiliCat/providers/SettingsProvider.dart';
 import 'package:CiliCat/providers/CatsProvider.dart';
 import 'package:CiliCat/screens/AuthPage.dart';
 import 'package:CiliCat/screens/HelpPage.dart';
@@ -23,12 +24,16 @@ class MyApp extends StatelessWidget {
           create: (_) => CatsProvider(),
           update: (_, auth, cats) => cats..update(auth),
         ),
+        ChangeNotifierProxyProvider<AuthProvider, SettingsProvider>(
+          create: (_) => SettingsProvider(),
+          update: (_, auth, settings) => settings..update(auth),
+        ),
       ],
       child: Consumer<AuthProvider>(
         builder: (context, auth, _) {
           return MaterialApp(
             debugShowCheckedModeBanner: false,
-            title: 'Čili Cat',
+            title: APP_TITLE,
             theme: ThemeData(primarySwatch: palette),
             home: auth.isLoggedIn
                 ? HomePage()

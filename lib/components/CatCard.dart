@@ -67,7 +67,11 @@ class CatCard extends StatelessWidget {
                               ),
                             ),
                           ),
-                          Text(_cat.age.toString() + ' mesiacov')
+                          Text(_cat.age.toString() +
+                              ' ' +
+                              (_cat.age == 1
+                                  ? 'mesiac'
+                                  : _cat.age < 5 ? 'mesiace' : 'mesiacov'))
                         ],
                       ),
                     ),
@@ -101,29 +105,37 @@ class CatCard extends StatelessWidget {
                           Row(
                             children: <Widget>[
                               IconButton(
-                                icon: Icon(Icons.comment),
-                                onPressed: null,
+                                icon: Icon(
+                                  Icons.comment,
+                                  color: palette,
+                                ),
+                                onPressed: () {},
                               ),
                               Text(_cat.commentsNum.toString())
                             ],
                           ),
                           IconButton(
-                            icon: Icon(Icons.share),
-                            onPressed: null,
+                            icon: Icon(
+                              Icons.share,
+                              color: palette[600],
+                            ),
+                            onPressed: () {},
                           ),
                           Spacer(),
-                          MaterialButton(
-                            onPressed: () {},
-                            child: Row(
-                              children: <Widget>[
-                                Icon(CatFont.cat),
-                                Padding(
-                                  padding: EdgeInsets.only(left: 8),
-                                  child: Text('Adoptovať'),
-                                ),
-                              ],
-                            ),
-                          )
+                          _cat.adoptive
+                              ? MaterialButton(
+                                  onPressed: () {},
+                                  child: Row(
+                                    children: <Widget>[
+                                      Icon(CatFont.cat),
+                                      Padding(
+                                        padding: EdgeInsets.only(left: 8),
+                                        child: Text('Adoptovať'),
+                                      ),
+                                    ],
+                                  ),
+                                )
+                              : Container(),
                         ],
                       ),
                     )
