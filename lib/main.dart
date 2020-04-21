@@ -20,13 +20,14 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider<AuthProvider>(
           create: (_) => AuthProvider(),
         ),
-        ChangeNotifierProxyProvider<AuthProvider, CatsProvider>(
-          create: (_) => CatsProvider(),
-          update: (_, auth, cats) => cats..update(auth),
-        ),
         ChangeNotifierProxyProvider<AuthProvider, SettingsProvider>(
           create: (_) => SettingsProvider(),
           update: (_, auth, settings) => settings..update(auth),
+        ),
+        ChangeNotifierProxyProvider2<AuthProvider, SettingsProvider,
+            CatsProvider>(
+          create: (_) => CatsProvider(),
+          update: (_, auth, settings, cats) => cats..update(auth, settings),
         ),
       ],
       child: Consumer<AuthProvider>(
@@ -34,7 +35,11 @@ class MyApp extends StatelessWidget {
           return MaterialApp(
             debugShowCheckedModeBanner: false,
             title: APP_TITLE,
-            theme: ThemeData(primarySwatch: palette),
+            theme: ThemeData(
+                primarySwatch: palette,
+                textTheme: TextTheme(
+                  body1: TextStyle(fontSize: 16),
+                )),
             home: auth.isLoggedIn
                 ? HomePage()
                 : FutureBuilder(

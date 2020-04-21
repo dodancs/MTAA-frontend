@@ -72,6 +72,7 @@ class SettingsProvider with ChangeNotifier {
   }
 
   int breedIdFromName(String name) {
+    if (_breeds == null) return null;
     int id;
     _breeds.forEach((b) {
       if (b.name == name) id = b.id;
@@ -80,6 +81,7 @@ class SettingsProvider with ChangeNotifier {
   }
 
   int colourIdFromName(String name) {
+    if (_colours == null) return null;
     int id;
     _colours.forEach((c) {
       if (c.name == name) id = c.id;
@@ -88,6 +90,7 @@ class SettingsProvider with ChangeNotifier {
   }
 
   int healthStatusIdFromName(String name) {
+    if (_healthStatuses == null) return null;
     int id;
     _healthStatuses.forEach((h) {
       if (h.name == name) id = h.id;
@@ -96,6 +99,7 @@ class SettingsProvider with ChangeNotifier {
   }
 
   String breedNameFromId(int id) {
+    if (_breeds == null) return null;
     String name;
     _breeds.forEach((b) {
       if (b.id == id) name = b.name;
@@ -103,7 +107,17 @@ class SettingsProvider with ChangeNotifier {
     return name;
   }
 
+  Breed breedFromId(int id) {
+    if (_breeds == null) return null;
+    Breed breed;
+    _breeds.forEach((b) {
+      if (b.id == id) breed = b;
+    });
+    return breed;
+  }
+
   String colourNameFromId(int id) {
+    if (_colours == null) return null;
     String name;
     _colours.forEach((c) {
       if (c.id == id) name = c.name;
@@ -111,12 +125,31 @@ class SettingsProvider with ChangeNotifier {
     return name;
   }
 
-  String healthStatusNameFromId(int id) {
-    String name;
-    _healthStatuses.forEach((h) {
-      if (h.id == id) name = h.name;
+  Colour colourFromId(int id) {
+    if (_colours == null) return null;
+    Colour colour;
+    _colours.forEach((c) {
+      if (c.id == id) colour = c;
     });
-    return name;
+    return colour;
+  }
+
+  String healthStatusNameFromId(int id) {
+    if (_healthStatuses == null) return null;
+    String status;
+    _healthStatuses.forEach((h) {
+      if (h.id == id) status = h.name;
+    });
+    return status;
+  }
+
+  HealthStatus healthStatusFromId(int id) {
+    if (_healthStatuses == null) return null;
+    HealthStatus status;
+    _healthStatuses.forEach((h) {
+      if (h.id == id) status = h;
+    });
+    return status;
   }
 
   void update(AuthProvider auth) async {

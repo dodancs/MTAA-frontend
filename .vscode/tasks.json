@@ -13,6 +13,11 @@
             "type": "shell",
             "command": "flutter pub get;flutter pub run flutter_launcher_icons:main",
             "problemMatcher": []
+        }, {
+            "label": "Flutter: generate APK and deploy",
+            "type": "shell",
+            "command": "flutter build apk --split-per-abi;flutter install",
+            "problemMatcher": []
         }
     ]
 }

@@ -2,6 +2,7 @@ import 'package:CiliCat/cat_font_icons.dart';
 import 'package:CiliCat/components/ShimmerImage.dart';
 import 'package:CiliCat/models/Cat.dart';
 import 'package:CiliCat/providers/CatsProvider.dart';
+import 'package:CiliCat/screens/CatDetailPage.dart';
 import 'package:CiliCat/settings.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -11,7 +12,14 @@ class CatCard extends StatelessWidget {
   final bool _liked;
   CatCard(this._cat, this._liked);
 
-  void _onTap(BuildContext context) {}
+  void _onTap(BuildContext context) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => CatDetailPage(_cat),
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -25,32 +33,35 @@ class CatCard extends StatelessWidget {
             onTap: () => _onTap(context),
             child: Column(
               children: <Widget>[
-                Stack(
-                  children: <Widget>[
-                    ShimmerImage(
-                      picture: _cat.pictures[0],
-                      width: double.infinity,
-                      height: MediaQuery.of(context).size.width * 0.9,
-                    ),
-                    _cat.adoptive
-                        ? Positioned(
-                            top: 10,
-                            right: 10,
-                            child: Container(
-                              decoration: BoxDecoration(
-                                shape: BoxShape.circle,
-                                color: Colors.black38,
+                Hero(
+                  tag: _cat,
+                  child: Stack(
+                    children: <Widget>[
+                      ShimmerImage(
+                        picture: _cat.pictures[0],
+                        width: double.infinity,
+                        height: MediaQuery.of(context).size.width * 0.9,
+                      ),
+                      _cat.adoptive
+                          ? Positioned(
+                              top: 10,
+                              right: 10,
+                              child: Container(
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  color: Colors.black38,
+                                ),
+                                padding: EdgeInsets.all(10),
+                                child: Icon(
+                                  CatFont.try_out,
+                                  color: Colors.white,
+                                  size: 36,
+                                ),
                               ),
-                              padding: EdgeInsets.all(10),
-                              child: Icon(
-                                CatFont.try_out,
-                                color: Colors.white,
-                                size: 36,
-                              ),
-                            ),
-                          )
-                        : Container(),
-                  ],
+                            )
+                          : Container(),
+                    ],
+                  ),
                 ),
                 Column(
                   children: <Widget>[
@@ -82,7 +93,7 @@ class CatCard extends StatelessWidget {
                         maxLines: 3,
                         text: TextSpan(
                           text: _cat.description,
-                          style: DefaultTextStyle.of(context).style,
+                          style: Theme.of(context).textTheme.body1,
                         ),
                         softWrap: true,
                         overflow: TextOverflow.fade,

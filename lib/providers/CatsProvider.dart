@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:CiliCat/providers/SettingsProvider.dart';
 import 'package:http/http.dart' as http;
 import 'package:CiliCat/models/Cat.dart';
 import 'package:CiliCat/providers/AuthProvider.dart';
@@ -8,6 +9,7 @@ import 'package:flutter/material.dart';
 
 class CatsProvider with ChangeNotifier {
   AuthProvider _auth;
+  SettingsProvider _settings;
   List<Cat> _cats;
   int _limit = 5;
   int _page = 1;
@@ -132,11 +134,18 @@ class CatsProvider with ChangeNotifier {
             uuid: cat['uuid'],
             name: cat['name'],
             age: cat['age'],
-            sex: cat['sex'] ? sexes[0] : sexes[1],
+            sex: cat['sex'],
             description: cat['description'],
             adoptive: cat['adoptive'],
             pictures: List<String>.from(cat['pictures']),
             commentsNum: cat['comments'],
+            breed: _settings.breedFromId(cat['breed']),
+            colour: _settings.colourFromId(cat['colour']),
+            health_status: _settings.healthStatusFromId(cat['health_status']),
+            castrated: cat['castrated'],
+            vaccinated: cat['vaccinated'],
+            dewormed: cat['dewormed'],
+            health_log: cat['health_log'],
           ),
         );
       }
@@ -182,11 +191,18 @@ class CatsProvider with ChangeNotifier {
             uuid: cat['uuid'],
             name: cat['name'],
             age: cat['age'],
-            sex: cat['sex'] ? sexes[0] : sexes[1],
+            sex: cat['sex'],
             description: cat['description'],
             adoptive: cat['adoptive'],
             pictures: List<String>.from(cat['pictures']),
             commentsNum: cat['comments'],
+            breed: _settings.breedFromId(cat['breed']),
+            colour: _settings.colourFromId(cat['colour']),
+            health_status: _settings.healthStatusFromId(cat['health_status']),
+            castrated: cat['castrated'],
+            vaccinated: cat['vaccinated'],
+            dewormed: cat['dewormed'],
+            health_log: cat['health_log'],
           ),
         );
       }
@@ -227,11 +243,12 @@ class CatsProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  void update(AuthProvider auth) async {
+  void update(AuthProvider auth, SettingsProvider settings) async {
     if (!auth.isLoggedIn) {
       return;
     }
     _auth = auth;
+    _settings = settings;
     await getCats();
   }
 }

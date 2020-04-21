@@ -7,7 +7,7 @@ class Cat {
   String uuid;
   String name;
   int age;
-  String sex;
+  bool sex;
   Breed breed;
   HealthStatus health_status;
   bool castrated;
@@ -29,12 +29,12 @@ class Cat {
     @required this.adoptive,
     @required this.pictures,
     @required this.commentsNum,
-    this.breed,
-    this.health_status,
-    this.castrated,
-    this.vaccinated,
-    this.dewormed,
-    this.colour,
-    this.health_log,
+    @required this.breed,
+    @required this.health_status,
+    @required this.castrated,
+    @required this.vaccinated,
+    @required this.dewormed,
+    @required this.colour,
+    @required this.health_log,
   });
 }

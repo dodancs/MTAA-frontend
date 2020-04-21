@@ -1,10 +1,11 @@
 import 'package:CiliCat/settings.dart';
 import 'package:flutter/material.dart';
 
-class Heading1 extends StatelessWidget {
+class Heading2 extends StatelessWidget {
   final String text;
+  final Color color;
 
-  Heading1(this.text);
+  Heading2(this.text, this.color);
 
   @override
   Widget build(BuildContext context) {
@@ -13,7 +14,10 @@ class Heading1 extends StatelessWidget {
       child: Text(
         this.text.toUpperCase(),
         style: TextStyle(
-            fontSize: 22, fontWeight: FontWeight.bold, color: palette[500]),
+          fontSize: 18,
+          fontWeight: FontWeight.bold,
+          color: color,
+        ),
       ),
     );
   }
