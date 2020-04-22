@@ -19,6 +19,7 @@ dependencies:
   connectivity: ^0.4.8+2
   cupertino_icons: ^0.1.2
   carousel_slider: ^2.0.0
+  flare_flutter: ^2.0.3
 
 dev_dependencies:
   flutter_test:
@@ -34,6 +35,7 @@ flutter:
 
   assets:
     - assets/images/background.jpg
+    - assets/like.flr
   fonts:
     - family: Amatic SC
       fonts:

@@ -7,12 +7,16 @@ import 'package:CiliCat/components/MainMenu.dart';
 import 'package:CiliCat/components/ShimmerImage.dart';
 import 'package:CiliCat/models/Cat.dart';
 import 'package:CiliCat/providers/AuthProvider.dart';
+import 'package:CiliCat/providers/CatsProvider.dart';
 import 'package:CiliCat/settings.dart';
 import 'package:carousel_slider/carousel_slider.dart';
+import 'package:flare_flutter/flare_actor.dart';
+import 'package:flare_flutter/flare_controls.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 class CatDetailPage extends StatefulWidget {
+  final FlareControls _flareControls = FlareControls();
   final Cat _cat;
 
   CatDetailPage(this._cat);
@@ -22,11 +26,13 @@ class CatDetailPage extends StatefulWidget {
 }
 
 class _CatDetailPageState extends State<CatDetailPage> {
-  int _imageIndex;
+  int _imageIndex = 0;
 
   @override
   Widget build(BuildContext context) {
     final authProvider = Provider.of<AuthProvider>(context);
+    bool _liked =
+        authProvider.getCurrentUser.favourites.contains(widget._cat.uuid);
 
     return Scaffold(
       appBar: AppTitleBack(),
@@ -36,51 +42,74 @@ class _CatDetailPageState extends State<CatDetailPage> {
           children: <Widget>[
             Hero(
               tag: widget._cat,
-              child: Stack(
-                children: <Widget>[
-                  CarouselSlider(
-                    items: widget._cat.pictures.map((picture) {
-                      return Builder(builder: (BuildContext context) {
-                        return Container(
-                          width: MediaQuery.of(context).size.width,
-                          child: ShimmerImage(
-                            picture: picture,
+              child: Material(
+                child: InkWell(
+                  onDoubleTap: () async {
+                    await Provider.of<CatsProvider>(context, listen: false)
+                        .like(widget._cat, _liked);
+                    setState(() {});
+                    widget._flareControls.play('like');
+                  },
+                  child: Stack(
+                    children: <Widget>[
+                      CarouselSlider(
+                        items: widget._cat.pictures.map((picture) {
+                          return Builder(builder: (BuildContext context) {
+                            return Container(
+                              width: MediaQuery.of(context).size.width,
+                              child: ShimmerImage(
+                                picture: picture,
+                              ),
+                            );
+                          });
+                        }).toList(),
+                        options: CarouselOptions(
+                          height: MediaQuery.of(context).size.width * 0.9,
+                          autoPlay: false,
+                          enableInfiniteScroll: false,
+                          enlargeCenterPage: false,
+                          viewportFraction: 1.0,
+                          onPageChanged: (index, reason) {
+                            setState(() {
+                              _imageIndex = index;
+                            });
+                          },
+                        ),
+                      ),
+                      widget._cat.adoptive
+                          ? Positioned(
+                              top: 10,
+                              right: 10,
+                              child: Container(
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  color: Colors.black38,
+                                ),
+                                padding: EdgeInsets.all(10),
+                                child: Icon(
+                                  CatFont.try_out,
+                                  color: Colors.white,
+                                  size: 36,
+                                ),
+                              ),
+                            )
+                          : Container(),
+                      Positioned.fill(
+                        child: Center(
+                          child: SizedBox(
+                            width: 100,
+                            height: 100,
+                            child: FlareActor(
+                              'assets/like.flr',
+                              controller: widget._flareControls,
+                              animation: 'idle',
+                            ),
                           ),
-                        );
-                      });
-                    }).toList(),
-                    options: CarouselOptions(
-                      height: MediaQuery.of(context).size.width * 0.9,
-                      autoPlay: false,
-                      enableInfiniteScroll: false,
-                      enlargeCenterPage: false,
-                      viewportFraction: 1.0,
-                      onPageChanged: (index, reason) {
-                        setState(() {
-                          _imageIndex = index;
-                        });
-                      },
-                    ),
+                        ),
+                      )
+                    ],
                   ),
-                  widget._cat.adoptive
-                      ? Positioned(
-                          top: 10,
-                          right: 10,
-                          child: Container(
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              color: Colors.black38,
-                            ),
-                            padding: EdgeInsets.all(10),
-                            child: Icon(
-                              CatFont.try_out,
-                              color: Colors.white,
-                              size: 36,
-                            ),
-                          ),
-                        )
-                      : Container(),
-                ],
+                ),
               ),
             ),
             Row(
@@ -108,6 +137,27 @@ class _CatDetailPageState extends State<CatDetailPage> {
                   child: Row(
                     children: <Widget>[
                       Icon(
+                        _liked ? Icons.favorite : Icons.favorite_border,
+                        color: palette[700],
+                      ),
+                      Padding(
+                        padding: EdgeInsets.only(left: 8),
+                        child: Text('Páči sa mi'),
+                      ),
+                    ],
+                  ),
+                  color: Colors.white,
+                  padding: EdgeInsets.fromLTRB(16, 10, 16, 10),
+                  onPressed: () async {
+                    await Provider.of<CatsProvider>(context, listen: false)
+                        .like(widget._cat, _liked);
+                    setState(() {});
+                  },
+                ),
+                MaterialButton(
+                  child: Row(
+                    children: <Widget>[
+                      Icon(
                         Icons.share,
                         color: palette[600],
                       ),
@@ -120,9 +170,6 @@ class _CatDetailPageState extends State<CatDetailPage> {
                   color: Colors.white,
                   padding: EdgeInsets.fromLTRB(16, 10, 16, 10),
                   onPressed: () {},
-                ),
-                SizedBox(
-                  width: 10,
                 ),
                 MaterialButton(
                   child: Row(
@@ -179,24 +226,24 @@ class _CatDetailPageState extends State<CatDetailPage> {
                     ),
                   )
                 : Container(),
-            Container(
-              width: double.infinity,
-              padding: EdgeInsets.only(left: 10, right: 10, bottom: 20),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: <Widget>[
-                  Heading2('KOMENTÁRE', Colors.black),
-                  RichText(
-                    text: TextSpan(
-                      text: widget._cat.description,
-                      style: Theme.of(context).textTheme.body1,
-                    ),
-                    softWrap: true,
-                    overflow: TextOverflow.fade,
-                  ),
-                ],
-              ),
-            ),
+            // Container(
+            //   width: double.infinity,
+            //   padding: EdgeInsets.only(left: 10, right: 10, bottom: 20),
+            //   child: Column(
+            //     crossAxisAlignment: CrossAxisAlignment.start,
+            //     children: <Widget>[
+            //       Heading2('KOMENTÁRE', Colors.black),
+            //       RichText(
+            //         text: TextSpan(
+            //           text: widget._cat.description,
+            //           style: Theme.of(context).textTheme.body1,
+            //         ),
+            //         softWrap: true,
+            //         overflow: TextOverflow.fade,
+            //       ),
+            //     ],
+            //   ),
+            // ),
           ],
         ),
       ),
