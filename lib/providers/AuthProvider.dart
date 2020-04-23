@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
 
-import 'package:CiliCat/components/ErrorDialog.dart';
 import 'package:CiliCat/models/User.dart';
 import 'package:connectivity/connectivity.dart';
 import 'package:http/http.dart' as http;

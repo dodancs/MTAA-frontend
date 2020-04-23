@@ -36,13 +36,13 @@ class MainMenu extends StatelessWidget {
         Navigator.pop(context);
       },
     ));
-    items.add(MenuItem(
-      icon: Icons.monetization_on,
-      title: 'Prispejte nám',
-      callback: () {
-        Navigator.pop(context);
-      },
-    ));
+    // items.add(MenuItem(
+    //   icon: Icons.monetization_on,
+    //   title: 'Prispejte nám',
+    //   callback: () {
+    //     Navigator.pop(context);
+    //   },
+    // ));
     items.add(MenuItem(
       icon: Icons.help,
       title: 'Pomoc',

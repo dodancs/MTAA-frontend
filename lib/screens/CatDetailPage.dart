@@ -8,6 +8,7 @@ import 'package:CiliCat/components/ShimmerImage.dart';
 import 'package:CiliCat/models/Cat.dart';
 import 'package:CiliCat/providers/AuthProvider.dart';
 import 'package:CiliCat/providers/CatsProvider.dart';
+import 'package:CiliCat/screens/EditCatPage.dart';
 import 'package:CiliCat/settings.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flare_flutter/flare_actor.dart';
@@ -147,7 +148,7 @@ class _CatDetailPageState extends State<CatDetailPage> {
                     ],
                   ),
                   color: Colors.white,
-                  padding: EdgeInsets.fromLTRB(16, 10, 16, 10),
+                  padding: EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                   onPressed: () async {
                     await Provider.of<CatsProvider>(context, listen: false)
                         .like(widget._cat, _liked);
@@ -168,7 +169,7 @@ class _CatDetailPageState extends State<CatDetailPage> {
                     ],
                   ),
                   color: Colors.white,
-                  padding: EdgeInsets.fromLTRB(16, 10, 16, 10),
+                  padding: EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                   onPressed: () {},
                 ),
                 MaterialButton(
@@ -182,7 +183,7 @@ class _CatDetailPageState extends State<CatDetailPage> {
                     ],
                   ),
                   color: palette,
-                  padding: EdgeInsets.fromLTRB(16, 10, 16, 10),
+                  padding: EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                   onPressed: () {},
                 ),
               ],
@@ -213,7 +214,7 @@ class _CatDetailPageState extends State<CatDetailPage> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: <Widget>[
-                        Heading2('LEKÁRSKY ZÁZNAM', Colors.black),
+                        Heading2('ZDRAVOTNÝ ZÁZNAM', Colors.black),
                         RichText(
                           text: TextSpan(
                             text: widget._cat.health_log,
@@ -250,7 +251,12 @@ class _CatDetailPageState extends State<CatDetailPage> {
       floatingActionButton: authProvider.isAdmin
           ? FloatingActionButton(
               onPressed: () {
-                // Add your onPressed code here!
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => EditCatPage(cat: widget._cat),
+                  ),
+                );
               },
               child: Icon(Icons.edit),
               backgroundColor: palette,

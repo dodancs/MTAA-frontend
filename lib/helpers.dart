@@ -7,7 +7,7 @@ bool isEmail(String em) {
   return regExp.hasMatch(em);
 }
 
-dynamic commnValidation(String value) {
+dynamic commonValidation(String value) {
   if (value.isEmpty) return 'Pole nemôže byť prázdne!';
   return null;
 }

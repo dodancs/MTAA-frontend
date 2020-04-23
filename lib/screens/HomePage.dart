@@ -6,6 +6,7 @@ import 'package:CiliCat/models/Breed.dart';
 import 'package:CiliCat/models/Colour.dart';
 import 'package:CiliCat/models/HealthStatus.dart';
 import 'package:CiliCat/providers/SettingsProvider.dart';
+import 'package:CiliCat/screens/EditCatPage.dart';
 import 'package:CiliCat/settings.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -227,7 +228,12 @@ class _HomePageState extends State<HomePage> {
       floatingActionButton: authProvider.isAdmin
           ? FloatingActionButton(
               onPressed: () {
-                // Add your onPressed code here!
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => EditCatPage(),
+                  ),
+                );
               },
               child: Icon(Icons.add),
               backgroundColor: palette,

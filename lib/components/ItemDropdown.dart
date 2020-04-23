@@ -5,9 +5,18 @@ class ItemDropdown extends StatefulWidget {
   final String hint;
   final List<String> items;
   final Function callback;
+  final bool noDefault;
+  final bool enabled;
   String selected;
 
-  ItemDropdown(this.hint, this.items, this.selected, this.callback);
+  ItemDropdown(
+    this.hint,
+    this.items,
+    this.selected,
+    this.callback, {
+    this.noDefault,
+    this.enabled,
+  });
 
   @override
   _ItemDropdownState createState() => _ItemDropdownState();
@@ -31,14 +40,18 @@ class _ItemDropdownState extends State<ItemDropdown> {
             Expanded(
               child: DropdownButton<String>(
                 icon: Icon(null),
-                hint: Text('Všetky'),
+                hint: widget.noDefault != null && widget.noDefault
+                    ? Text(widget.hint)
+                    : Text('Všetky'),
                 value: widget.selected,
-                onChanged: (String i) {
-                  setState(() {
-                    widget.selected = i;
-                    widget.callback(i);
-                  });
-                },
+                onChanged: widget.enabled == null || widget.enabled
+                    ? (String i) {
+                        setState(() {
+                          widget.selected = i;
+                          widget.callback(i);
+                        });
+                      }
+                    : null,
                 items: widget.items.map((String i) {
                   return DropdownMenuItem<String>(
                     value: i,
@@ -47,18 +60,22 @@ class _ItemDropdownState extends State<ItemDropdown> {
                 }).toList(),
               ),
             ),
-            SizedBox(
-              width: 10,
-            ),
-            IconButton(
-              icon: Icon(Icons.cancel),
-              onPressed: () {
-                setState(() {
-                  widget.selected = null;
-                  widget.callback(null);
-                });
-              },
-            )
+            widget.noDefault != null && widget.noDefault
+                ? Container()
+                : SizedBox(
+                    width: 10,
+                  ),
+            widget.noDefault != null && widget.noDefault
+                ? Container()
+                : IconButton(
+                    icon: Icon(Icons.cancel),
+                    onPressed: () {
+                      setState(() {
+                        widget.selected = null;
+                        widget.callback(null);
+                      });
+                    },
+                  )
           ],
         )
       ],

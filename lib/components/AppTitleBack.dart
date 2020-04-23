@@ -2,6 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:CiliCat/settings.dart';
 
 class AppTitleBack extends StatelessWidget with PreferredSizeWidget {
+  final Function callback;
+
+  AppTitleBack({this.callback});
+
   @override
   Widget build(BuildContext context) {
     return AppBar(
@@ -14,7 +18,13 @@ class AppTitleBack extends StatelessWidget with PreferredSizeWidget {
       centerTitle: true,
       leading: IconButton(
         icon: Icon(Icons.arrow_back),
-        onPressed: Navigator.of(context).pop,
+        onPressed: () async {
+          if (this.callback == null) {
+            Navigator.of(context).pop();
+          } else {
+            this.callback();
+          }
+        },
       ),
       elevation: 0,
     );

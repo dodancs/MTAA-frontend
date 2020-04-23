@@ -41,7 +41,7 @@ class _LoginFormState extends State<LoginForm> {
               _email = value;
             },
             validator: (value) {
-              var ret = commnValidation(value);
+              var ret = commonValidation(value);
               if (ret != null) return ret;
               if (!isEmail(value)) return 'E-mailová adresa nespĺňa formát!';
               return null;
@@ -61,7 +61,7 @@ class _LoginFormState extends State<LoginForm> {
               _password = value;
             },
             validator: (value) {
-              var ret = commnValidation(value);
+              var ret = commonValidation(value);
               return ret;
             },
             readOnly: !_enabled,

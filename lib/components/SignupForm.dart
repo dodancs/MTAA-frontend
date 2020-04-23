@@ -49,7 +49,7 @@ class _SignupFormState extends State<SignupForm> {
               _firstname = value;
             },
             validator: (value) {
-              var ret = commnValidation(value);
+              var ret = commonValidation(value);
               return ret;
             },
             readOnly: !_enabled,
@@ -59,7 +59,7 @@ class _SignupFormState extends State<SignupForm> {
               labelText: 'Priezvisko',
               enabled: _enabled,
             ),
-            keyboardType: TextInputType.emailAddress,
+            keyboardType: TextInputType.text,
             textInputAction: TextInputAction.next,
             focusNode: _lastnameFocus,
             onFieldSubmitted: (_) {
@@ -69,7 +69,7 @@ class _SignupFormState extends State<SignupForm> {
               _lastname = value;
             },
             validator: (value) {
-              var ret = commnValidation(value);
+              var ret = commonValidation(value);
               return ret;
             },
             readOnly: !_enabled,
@@ -89,7 +89,7 @@ class _SignupFormState extends State<SignupForm> {
               _email = value;
             },
             validator: (value) {
-              var ret = commnValidation(value);
+              var ret = commonValidation(value);
               if (ret != null) return ret;
               if (!isEmail(value)) return 'E-mailová adresa nespĺňa formát!';
               return null;
@@ -115,7 +115,7 @@ class _SignupFormState extends State<SignupForm> {
               _password = value;
             },
             validator: (value) {
-              var ret = commnValidation(value);
+              var ret = commonValidation(value);
               if (ret != null) return ret;
               if (value.length < 4)
                 return 'Heslo musí obsahovať aspoň 4 znaky!';
@@ -136,7 +136,7 @@ class _SignupFormState extends State<SignupForm> {
               _passwordAgain = value;
             },
             validator: (value) {
-              var ret = commnValidation(value);
+              var ret = commonValidation(value);
               if (ret != null) return ret;
               if (value != _password) return 'Heslá sa nezhodujú!';
               return null;
