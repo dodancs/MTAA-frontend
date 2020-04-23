@@ -1,14 +1,17 @@
 import 'package:CiliCat/components/AppTitleBack.dart';
+import 'package:CiliCat/components/ConfirmDialog.dart';
+import 'package:CiliCat/components/ErrorDialog.dart';
 import 'package:CiliCat/components/Heading1.dart';
 import 'package:CiliCat/components/ItemDropdown.dart';
 import 'package:CiliCat/components/ItemDropdownWithCreate.dart';
 import 'package:CiliCat/components/MainMenu.dart';
-import 'package:CiliCat/components/UnsavedConfirmDialog.dart';
+import 'package:CiliCat/components/TextInputDialog.dart';
 import 'package:CiliCat/helpers.dart';
 import 'package:CiliCat/models/Breed.dart';
 import 'package:CiliCat/models/Cat.dart';
 import 'package:CiliCat/models/Colour.dart';
 import 'package:CiliCat/models/HealthStatus.dart';
+import 'package:CiliCat/providers/CatsProvider.dart';
 import 'package:CiliCat/providers/SettingsProvider.dart';
 import 'package:CiliCat/settings.dart';
 import 'package:flutter/cupertino.dart';
@@ -16,7 +19,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 
-class EditCatPage extends StatefulWidget {
+class CatEditPage extends StatefulWidget {
   final Cat cat;
 
   String _name;
@@ -35,7 +38,7 @@ class EditCatPage extends StatefulWidget {
   String _currentColour;
   String _currentHealthStatus;
 
-  EditCatPage({this.cat}) {
+  CatEditPage({this.cat}) {
     if (cat != null) {
       _name = cat.name;
       _age = cat.age;
@@ -56,17 +59,18 @@ class EditCatPage extends StatefulWidget {
   }
 
   @override
-  _EditCatPageState createState() => _EditCatPageState();
+  _CatEditPageState createState() => _CatEditPageState();
 }
 
-class _EditCatPageState extends State<EditCatPage> {
-  void _backPressed(BuildContext context, bool _unsaved) async {
+class _CatEditPageState extends State<CatEditPage> {
+  void _backPressed(bool _unsaved) async {
     if (!_unsaved)
       Navigator.of(context).pop();
     else {
       bool r = await showDialog(
         context: context,
-        builder: (BuildContext context) => UnsavedConfirmDialog(),
+        builder: (BuildContext context) =>
+            ConfirmDialog('Zmeny neboli uložené!\nNaozaj si prajete odísť?'),
       );
       if (r) {
         Navigator.of(context).pop();
@@ -74,14 +78,116 @@ class _EditCatPageState extends State<EditCatPage> {
     }
   }
 
-  void _addBreed() {}
-  void _addColour() {}
-  void _addHealthStatus() {}
+  void _addBreed() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) => TextInputDialog(
+        'Zadajte názov plemena',
+        validate: (value) => (value != null && value != ''
+            ? Provider.of<SettingsProvider>(context, listen: false)
+                        .breeds
+                        .firstWhere((b) => b.name == value,
+                            orElse: () => null) ==
+                    null
+                ? null
+                : 'Plemeno už existuje'
+            : 'Zadajte názov plemena'),
+        save: (value) async {
+          String ret =
+              await Provider.of<SettingsProvider>(context, listen: false)
+                  .addSetting('breeds', value);
 
-  void _deleteCat() {
+          if (ret != null) {
+            print(ret);
+            showDialog(
+              context: context,
+              builder: (BuildContext context) => ErrorDialog(ret),
+            );
+          }
+        },
+      ),
+    );
+  }
+
+  void _addColour() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) => TextInputDialog(
+        'Zadajte farbu srsti',
+        validate: (value) => (value != null && value != ''
+            ? Provider.of<SettingsProvider>(context, listen: false)
+                        .colours
+                        .firstWhere((c) => c.name == value,
+                            orElse: () => null) ==
+                    null
+                ? null
+                : 'Farba už existuje'
+            : 'Zadajte farbu srsti'),
+        save: (value) async {
+          String ret =
+              await Provider.of<SettingsProvider>(context, listen: false)
+                  .addSetting('colours', value);
+
+          if (ret != null) {
+            print(ret);
+            showDialog(
+              context: context,
+              builder: (BuildContext context) => ErrorDialog(ret),
+            );
+          }
+        },
+      ),
+    );
+  }
+
+  void _addHealthStatus() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) => TextInputDialog(
+        'Zadajte názov zdravotného stavu',
+        validate: (value) => (value != null && value != ''
+            ? Provider.of<SettingsProvider>(context, listen: false)
+                        .healthStatuses
+                        .firstWhere((h) => h.name == value,
+                            orElse: () => null) ==
+                    null
+                ? null
+                : 'Zdravotný stav už existuje'
+            : 'Zadajte názov zdravotného stavu'),
+        save: (value) async {
+          String ret =
+              await Provider.of<SettingsProvider>(context, listen: false)
+                  .addSetting('health_statuses', value);
+
+          if (ret != null) {
+            print(ret);
+            showDialog(
+              context: context,
+              builder: (BuildContext context) => ErrorDialog(ret),
+            );
+          }
+        },
+      ),
+    );
+  }
+
+  void _deleteCat() async {
     setState(() {
       _enabled = false;
     });
+
+    String ret = await Provider.of<CatsProvider>(context, listen: false)
+        .delete(widget.cat.uuid);
+
+    if (ret != null) {
+      print(ret);
+      showDialog(
+        context: context,
+        builder: (BuildContext context) => ErrorDialog(ret),
+      );
+    } else {
+      Navigator.of(context).pop();
+    }
   }
 
   void _submit() {
@@ -138,7 +244,14 @@ class _EditCatPageState extends State<EditCatPage> {
                   style: TextStyle(fontSize: 20),
                 ),
                 color: palette[700],
-                onPressed: _deleteCat,
+                onPressed: () async {
+                  bool b = await showDialog(
+                    context: context,
+                    builder: (BuildContext context) =>
+                        ConfirmDialog('Naozaj chcete zmazať túto mačku?'),
+                  );
+                  if (b) _deleteCat();
+                },
               ),
         MaterialButton(
           padding: EdgeInsets.symmetric(vertical: 10, horizontal: 16),
@@ -183,12 +296,13 @@ class _EditCatPageState extends State<EditCatPage> {
         else
           return showDialog(
             context: context,
-            builder: (BuildContext context) => UnsavedConfirmDialog(),
+            builder: (BuildContext context) => ConfirmDialog(
+                'Zmeny neboli uložené!\nNaozaj si prajete odísť?'),
           );
       },
       child: Scaffold(
         appBar: AppTitleBack(callback: () {
-          _backPressed(context, _unsaved);
+          _backPressed(_unsaved);
         }),
         drawer: MainMenu(),
         body: SingleChildScrollView(

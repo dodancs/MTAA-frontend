@@ -8,7 +8,7 @@ import 'package:CiliCat/components/ShimmerImage.dart';
 import 'package:CiliCat/models/Cat.dart';
 import 'package:CiliCat/providers/AuthProvider.dart';
 import 'package:CiliCat/providers/CatsProvider.dart';
-import 'package:CiliCat/screens/EditCatPage.dart';
+import 'package:CiliCat/screens/CatEditPage.dart';
 import 'package:CiliCat/settings.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flare_flutter/flare_actor.dart';
@@ -18,9 +18,9 @@ import 'package:provider/provider.dart';
 
 class CatDetailPage extends StatefulWidget {
   final FlareControls _flareControls = FlareControls();
-  final Cat _cat;
+  final String _uuid;
 
-  CatDetailPage(this._cat);
+  CatDetailPage(this._uuid);
 
   @override
   _CatDetailPageState createState() => _CatDetailPageState();
@@ -31,9 +31,12 @@ class _CatDetailPageState extends State<CatDetailPage> {
 
   @override
   Widget build(BuildContext context) {
+    final catsProvider = Provider.of<CatsProvider>(context);
     final authProvider = Provider.of<AuthProvider>(context);
-    bool _liked =
-        authProvider.getCurrentUser.favourites.contains(widget._cat.uuid);
+
+    Cat _cat = catsProvider.catDetails(widget._uuid);
+
+    bool _liked = authProvider.getCurrentUser.favourites.contains(widget._uuid);
 
     return Scaffold(
       appBar: AppTitleBack(),
@@ -42,19 +45,19 @@ class _CatDetailPageState extends State<CatDetailPage> {
         child: Column(
           children: <Widget>[
             Hero(
-              tag: widget._cat,
+              tag: _cat,
               child: Material(
                 child: InkWell(
                   onDoubleTap: () async {
                     await Provider.of<CatsProvider>(context, listen: false)
-                        .like(widget._cat, _liked);
+                        .like(_cat, _liked);
                     setState(() {});
                     widget._flareControls.play('like');
                   },
                   child: Stack(
                     children: <Widget>[
                       CarouselSlider(
-                        items: widget._cat.pictures.map((picture) {
+                        items: _cat.pictures.map((picture) {
                           return Builder(builder: (BuildContext context) {
                             return Container(
                               width: MediaQuery.of(context).size.width,
@@ -77,7 +80,7 @@ class _CatDetailPageState extends State<CatDetailPage> {
                           },
                         ),
                       ),
-                      widget._cat.adoptive
+                      _cat.adoptive
                           ? Positioned(
                               top: 10,
                               right: 10,
@@ -115,8 +118,8 @@ class _CatDetailPageState extends State<CatDetailPage> {
             ),
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
-              children: widget._cat.pictures.map((url) {
-                int index = widget._cat.pictures.indexOf(url);
+              children: _cat.pictures.map((url) {
+                int index = _cat.pictures.indexOf(url);
                 return Container(
                   width: 8.0,
                   height: 8.0,
@@ -151,7 +154,7 @@ class _CatDetailPageState extends State<CatDetailPage> {
                   padding: EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                   onPressed: () async {
                     await Provider.of<CatsProvider>(context, listen: false)
-                        .like(widget._cat, _liked);
+                        .like(_cat, _liked);
                     setState(() {});
                   },
                 ),
@@ -194,10 +197,10 @@ class _CatDetailPageState extends State<CatDetailPage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: <Widget>[
-                  Heading1(widget._cat.name),
+                  Heading1(_cat.name),
                   RichText(
                     text: TextSpan(
-                      text: widget._cat.description,
+                      text: _cat.description,
                       style: Theme.of(context).textTheme.body1,
                     ),
                     softWrap: true,
@@ -206,8 +209,8 @@ class _CatDetailPageState extends State<CatDetailPage> {
                 ],
               ),
             ),
-            InfoSection(widget._cat),
-            widget._cat.health_log != ""
+            InfoSection(_cat),
+            _cat.health_log != ""
                 ? Container(
                     width: double.infinity,
                     padding: EdgeInsets.only(left: 10, right: 10, bottom: 20),
@@ -217,7 +220,7 @@ class _CatDetailPageState extends State<CatDetailPage> {
                         Heading2('ZDRAVOTNÝ ZÁZNAM', Colors.black),
                         RichText(
                           text: TextSpan(
-                            text: widget._cat.health_log,
+                            text: _cat.health_log,
                             style: Theme.of(context).textTheme.body1,
                           ),
                           softWrap: true,
@@ -254,7 +257,7 @@ class _CatDetailPageState extends State<CatDetailPage> {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => EditCatPage(cat: widget._cat),
+                    builder: (context) => CatEditPage(cat: _cat),
                   ),
                 );
               },

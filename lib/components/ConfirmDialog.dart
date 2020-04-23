@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:CiliCat/settings.dart';
 
-class UnsavedConfirmDialog extends StatelessWidget {
-  const UnsavedConfirmDialog({Key key}) : super(key: key);
+class ConfirmDialog extends StatelessWidget {
+  final String message;
+
+  ConfirmDialog(this.message);
 
   @override
   Widget build(BuildContext context) {
@@ -12,16 +14,16 @@ class UnsavedConfirmDialog extends StatelessWidget {
         return Future.value(false);
       },
       child: AlertDialog(
-        title: Text('Zmeny neboli uložené!\nNaozaj si prajete odísť?'),
+        title: Text(message),
         actions: <Widget>[
           FlatButton(
             onPressed: () => Navigator.pop(context, true),
-            child: Text('Áno'),
+            child: Text(bools[1]),
           ),
           FlatButton(
             onPressed: () => Navigator.pop(context, false),
             child: Text(
-              'Nie',
+              bools[0],
               style: TextStyle(color: Colors.white),
             ),
             color: palette,

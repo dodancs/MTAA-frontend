@@ -6,7 +6,7 @@ import 'package:CiliCat/models/Breed.dart';
 import 'package:CiliCat/models/Colour.dart';
 import 'package:CiliCat/models/HealthStatus.dart';
 import 'package:CiliCat/providers/SettingsProvider.dart';
-import 'package:CiliCat/screens/EditCatPage.dart';
+import 'package:CiliCat/screens/CatEditPage.dart';
 import 'package:CiliCat/settings.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -66,10 +66,10 @@ class _HomePageState extends State<HomePage> {
       'sex': settings['sex'] == null
           ? null
           : settings['sex'] == sexes[0] ? true : false,
-      'breed': settingsProvider.breedIdFromName(settings['breed']),
-      'colour': settingsProvider.colourIdFromName(settings['colour']),
+      'breed': settingsProvider.breedFrom(name: settings['breed']).id,
+      'colour': settingsProvider.colourFrom(name: settings['colour']).id,
       'health_status':
-          settingsProvider.healthStatusIdFromName(settings['health_status']),
+          settingsProvider.healthStatusFrom(name: settings['health_status']).id,
       'vaccinated': settings['vaccinated'] == null
           ? null
           : settings['vaccinated'] == bools[0] ? false : true,
@@ -155,13 +155,30 @@ class _HomePageState extends State<HomePage> {
                             currentSex: catsProvider.filter_sex == null
                                 ? null
                                 : catsProvider.filter_sex ? sexes[0] : sexes[1],
-                            currentBreed: settingsProvider
-                                .breedNameFromId(catsProvider.filter_breed),
-                            currentColour: settingsProvider
-                                .colourNameFromId(catsProvider.filter_colour),
-                            currentHealthStatus:
-                                settingsProvider.healthStatusNameFromId(
-                                    catsProvider.filter_health_status),
+                            currentBreed: settingsProvider.breedFrom(
+                                        id: catsProvider.filter_breed) !=
+                                    null
+                                ? settingsProvider
+                                    .breedFrom(id: catsProvider.filter_breed)
+                                    .name
+                                : null,
+                            currentColour: settingsProvider.colourFrom(
+                                        id: catsProvider.filter_colour) !=
+                                    null
+                                ? settingsProvider
+                                    .colourFrom(id: catsProvider.filter_colour)
+                                    .name
+                                : null,
+                            currentHealthStatus: settingsProvider
+                                        .healthStatusFrom(
+                                            id: catsProvider
+                                                .filter_health_status) !=
+                                    null
+                                ? settingsProvider
+                                    .healthStatusFrom(
+                                        id: catsProvider.filter_health_status)
+                                    .name
+                                : null,
                             currentVaccinated:
                                 catsProvider.filter_vaccinated == null
                                     ? null
@@ -231,7 +248,7 @@ class _HomePageState extends State<HomePage> {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => EditCatPage(),
+                    builder: (context) => CatEditPage(),
                   ),
                 );
               },

@@ -55,16 +55,28 @@ class _ItemDropdownWithCreateState extends State<ItemDropdownWithCreate> {
                       }
                     : null,
                 items: [
+                  DropdownMenuItem<String>(
+                    value: '+ Pridať',
+                    child: Row(
+                      children: <Widget>[
+                        Icon(
+                          Icons.add,
+                          color: palette[500],
+                        ),
+                        SizedBox(width: 10),
+                        Text(
+                          'Pridať',
+                          style: TextStyle(color: palette[500]),
+                        ),
+                      ],
+                    ),
+                  ),
                   ...widget.items.map((String i) {
                     return DropdownMenuItem<String>(
                       value: i,
                       child: Text(i),
                     );
                   }).toList(),
-                  DropdownMenuItem<String>(
-                    value: '+ Pridať',
-                    child: Text('+ Pridať'),
-                  ),
                 ],
               ),
             ),

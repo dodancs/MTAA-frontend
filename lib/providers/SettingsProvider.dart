@@ -71,85 +71,93 @@ class SettingsProvider with ChangeNotifier {
     return list;
   }
 
-  int breedIdFromName(String name) {
+  Future addSetting(String type, String name) async {
+    http.Response tmp;
+    try {
+      tmp = await http.post(
+        Uri.http(
+          API_URL,
+          '/settings/' + type,
+        ),
+        headers: {
+          'Authorization': _auth.getTokenType + ' ' + _auth.getToken,
+          'Content-Type': 'application/json',
+        },
+        body: json.encode({'name': name}),
+      );
+    } catch (error) {
+      print(error);
+      return 'Nastala serverová chyba';
+    }
+
+    var response;
+    try {
+      response = json.decode(tmp.body);
+    } catch (error) {
+      print(error);
+      return 'Nastala serverová chyba';
+    }
+
+    if (tmp.statusCode == 200 && response['id'] != null) {
+      if (type == 'breeds') _breeds.add(Breed(id: response['id'], name: name));
+      if (type == 'colours')
+        _colours.add(Colour(id: response['id'], name: name));
+      if (type == 'health_statuses')
+        _healthStatuses.add(HealthStatus(id: response['id'], name: name));
+
+      notifyListeners();
+      return null;
+    }
+
+    return response['error'];
+  }
+
+  Breed breedFrom({final int id, final String name}) {
     if (_breeds == null) return null;
-    int id;
-    _breeds.forEach((b) {
-      if (b.name == name) id = b.id;
-    });
-    return id;
+
+    if (id != null)
+      return _breeds.firstWhere((b) {
+        return b.id == id;
+      }, orElse: () => null);
+
+    if (name != null)
+      return _breeds.firstWhere((b) {
+        return b.name == name;
+      }, orElse: () => null);
+
+    return null;
   }
 
-  int colourIdFromName(String name) {
+  Colour colourFrom({final int id, final String name}) {
     if (_colours == null) return null;
-    int id;
-    _colours.forEach((c) {
-      if (c.name == name) id = c.id;
-    });
-    return id;
+
+    if (id != null)
+      return _colours.firstWhere((c) {
+        return c.id == id;
+      }, orElse: () => null);
+
+    if (name != null)
+      return _colours.firstWhere((c) {
+        return c.name == name;
+      }, orElse: () => null);
+
+    return null;
   }
 
-  int healthStatusIdFromName(String name) {
+  HealthStatus healthStatusFrom({final int id, final String name}) {
     if (_healthStatuses == null) return null;
-    int id;
-    _healthStatuses.forEach((h) {
-      if (h.name == name) id = h.id;
-    });
-    return id;
-  }
 
-  String breedNameFromId(int id) {
-    if (_breeds == null) return null;
-    String name;
-    _breeds.forEach((b) {
-      if (b.id == id) name = b.name;
-    });
-    return name;
-  }
+    if (id != null)
+      return _healthStatuses.firstWhere((h) {
+        return h.id == id;
+      }, orElse: () => null);
 
-  Breed breedFromId(int id) {
-    if (_breeds == null) return null;
-    Breed breed;
-    _breeds.forEach((b) {
-      if (b.id == id) breed = b;
-    });
-    return breed;
-  }
+    if (name != null)
+      return _healthStatuses.firstWhere((h) {
+        return h.name == name;
+      }, orElse: () => null);
 
-  String colourNameFromId(int id) {
-    if (_colours == null) return null;
-    String name;
-    _colours.forEach((c) {
-      if (c.id == id) name = c.name;
-    });
-    return name;
-  }
-
-  Colour colourFromId(int id) {
-    if (_colours == null) return null;
-    Colour colour;
-    _colours.forEach((c) {
-      if (c.id == id) colour = c;
-    });
-    return colour;
-  }
-
-  String healthStatusNameFromId(int id) {
-    if (_healthStatuses == null) return null;
-    String status;
-    _healthStatuses.forEach((h) {
-      if (h.id == id) status = h.name;
-    });
-    return status;
-  }
-
-  HealthStatus healthStatusFromId(int id) {
-    if (_healthStatuses == null) return null;
-    HealthStatus status;
-    _healthStatuses.forEach((h) {
-      if (h.id == id) status = h;
-    });
-    return status;
+    return null;
   }
 
   void update(AuthProvider auth) async {

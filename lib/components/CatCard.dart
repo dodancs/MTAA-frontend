@@ -16,7 +16,7 @@ class CatCard extends StatelessWidget {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => CatDetailPage(_cat),
+        builder: (context) => CatDetailPage(_cat.uuid),
       ),
     );
   }

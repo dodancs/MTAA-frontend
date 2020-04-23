@@ -62,7 +62,7 @@ class InfoSection extends StatelessWidget {
                     .copyWith(fontWeight: FontWeight.bold),
                 children: <TextSpan>[
                   TextSpan(
-                      text: _cat.breed.name,
+                      text: _cat.breed == null ? '' : _cat.breed.name,
                       style: TextStyle(fontWeight: FontWeight.normal)),
                 ],
               ),
@@ -78,7 +78,7 @@ class InfoSection extends StatelessWidget {
                     .copyWith(fontWeight: FontWeight.bold),
                 children: <TextSpan>[
                   TextSpan(
-                      text: _cat.colour.name,
+                      text: _cat.colour == null ? '' : _cat.colour.name,
                       style: TextStyle(fontWeight: FontWeight.normal)),
                 ],
               ),
@@ -94,7 +94,9 @@ class InfoSection extends StatelessWidget {
                     .copyWith(fontWeight: FontWeight.bold),
                 children: <TextSpan>[
                   TextSpan(
-                      text: _cat.health_status.name,
+                      text: _cat.health_status == null
+                          ? ''
+                          : _cat.health_status.name,
                       style: TextStyle(fontWeight: FontWeight.normal)),
                 ],
               ),
