@@ -4,7 +4,9 @@ import 'package:CiliCat/components/ErrorDialog.dart';
 import 'package:CiliCat/components/Heading1.dart';
 import 'package:CiliCat/components/ItemDropdown.dart';
 import 'package:CiliCat/components/ItemDropdownWithCreate.dart';
+import 'package:CiliCat/components/Loading.dart';
 import 'package:CiliCat/components/MainMenu.dart';
+import 'package:CiliCat/components/PictureListInput.dart';
 import 'package:CiliCat/components/TextInputDialog.dart';
 import 'package:CiliCat/helpers.dart';
 import 'package:CiliCat/models/Breed.dart';
@@ -12,6 +14,7 @@ import 'package:CiliCat/models/Cat.dart';
 import 'package:CiliCat/models/Colour.dart';
 import 'package:CiliCat/models/HealthStatus.dart';
 import 'package:CiliCat/providers/CatsProvider.dart';
+import 'package:CiliCat/providers/PicturesProvider.dart';
 import 'package:CiliCat/providers/SettingsProvider.dart';
 import 'package:CiliCat/settings.dart';
 import 'package:flutter/cupertino.dart';
@@ -23,20 +26,31 @@ class CatEditPage extends StatefulWidget {
   final Cat cat;
 
   String _name;
+  bool _nameChanged = false;
   int _age;
+  bool _ageChanged = false;
   String _description;
+  bool _descriptionChanged = false;
   String _health_log;
+  bool _healthLogChanged = false;
   bool _sex;
+  bool _sexChanged = false;
   Breed _breed;
+  bool _breedChanged = false;
   Colour _colour;
+  bool _colourChanged = false;
   HealthStatus _health_status;
+  bool _healthStatusChanged = false;
   bool _castrated;
+  bool _castratedChanged = false;
   bool _vaccinated;
+  bool _vaccinatedChanged = false;
   bool _dewormed;
-  String _currentSex;
-  String _currentBreed;
-  String _currentColour;
-  String _currentHealthStatus;
+  bool _dewormedChanged = false;
+  bool _adoptive;
+  bool _adoptiveChanged = false;
+  List<String> _pictures;
+  bool _picturesChanged = false;
 
   CatEditPage({this.cat}) {
     if (cat != null) {
@@ -51,10 +65,8 @@ class CatEditPage extends StatefulWidget {
       _castrated = cat.castrated;
       _vaccinated = cat.vaccinated;
       _dewormed = cat.dewormed;
-      _currentSex = cat.sex ? sexes[0] : sexes[1];
-      _currentBreed = _breed.name;
-      _currentColour = _colour.name;
-      _currentHealthStatus = _health_status.name;
+      _adoptive = cat.adoptive;
+      _pictures = cat.pictures;
     }
   }
 
@@ -63,7 +75,7 @@ class CatEditPage extends StatefulWidget {
 }
 
 class _CatEditPageState extends State<CatEditPage> {
-  void _backPressed(bool _unsaved) async {
+  Future<bool> _backPressed() async {
     if (!_unsaved)
       Navigator.of(context).pop();
     else {
@@ -73,9 +85,19 @@ class _CatEditPageState extends State<CatEditPage> {
             ConfirmDialog('Zmeny neboli uložené!\nNaozaj si prajete odísť?'),
       );
       if (r) {
+        // if not editing a cat
+        if (widget.cat == null) {
+          // if pictures were created - delete them
+          if (widget._pictures != null)
+            for (var p in widget._pictures) {
+              await Provider.of<PicturesProvider>(context, listen: false)
+                  .remove(p);
+            }
+        }
         Navigator.of(context).pop();
       }
     }
+    return Future.value(false);
   }
 
   void _addBreed() {
@@ -190,7 +212,7 @@ class _CatEditPageState extends State<CatEditPage> {
     }
   }
 
-  void _submit() {
+  void _submit() async {
     setState(() {
       _enabled = false;
     });
@@ -201,24 +223,74 @@ class _CatEditPageState extends State<CatEditPage> {
       return;
     }
     _form.currentState.save();
-    // print('name: ' + widget._name);
-    // print('age: ' + widget._age.toString());
-    // print('description: ' + widget._description);
-    // print('health_log: ' + widget._health_log);
-    // print('sex: ' + widget._sex.toString());
-    // print('breed: ' + widget._breed.name);
-    // print('colour: ' + widget._colour.name);
-    // print('health_status: ' + widget._health_status.name);
-    // print('castrated: ' + widget._castrated.toString());
-    // print('vaccinated: ' + widget._vaccinated.toString());
-    // print('dewormed: ' + widget._dewormed.toString());
-    // print('new_sex: ' + widget._currentSex);
-    // print('new_breed: ' + widget._currentBreed);
-    // print('new_colour: ' + widget._currentColour);
-    // print('new_health_status: ' + widget._currentHealthStatus);
+
+    // creating new cat
+    if (widget.cat == null) {
+      var ret = Provider.of<CatsProvider>(context, listen: false).add(Cat(
+        name: widget._name,
+        age: widget._age,
+        description: widget._description,
+        health_log: widget._health_log,
+        sex: widget._sex,
+        breed: widget._breed,
+        colour: widget._colour,
+        health_status: widget._health_status,
+        castrated: widget._castrated,
+        vaccinated: widget._vaccinated,
+        dewormed: widget._dewormed,
+        adoptive: widget._adoptive,
+        pictures: widget._pictures,
+      ));
+    } else {
+      Map<String, dynamic> changes = {};
+      if (widget._nameChanged) changes.addAll({'name': widget._name});
+      if (widget._ageChanged) changes.addAll({'age': widget._age});
+      if (widget._descriptionChanged)
+        changes.addAll({'description': widget._description});
+      if (widget._healthLogChanged)
+        changes.addAll({'health_log': widget._health_log});
+      if (widget._sexChanged) changes.addAll({'sex': widget._sex});
+      if (widget._breedChanged) changes.addAll({'breed': widget._breed.id});
+      if (widget._colourChanged) changes.addAll({'colour': widget._colour.id});
+      if (widget._healthStatusChanged)
+        changes.addAll({'health_status': widget._health_status.id});
+      if (widget._castratedChanged)
+        changes.addAll({'castrated': widget._castrated});
+      if (widget._vaccinated)
+        changes.addAll({'vaccinated': widget._vaccinated});
+      if (widget._descriptionChanged)
+        changes.addAll({'dewormed': widget._dewormed});
+      if (widget._adoptiveChanged)
+        changes.addAll({'adoptive': widget._adoptive});
+      if (widget._picturesChanged)
+        changes.addAll({'pictures': widget._pictures});
+
+      if (changes.isNotEmpty) {
+        var ret = await Provider.of<CatsProvider>(context, listen: false)
+            .change(changes, widget.cat.uuid);
+
+        if (ret == null) {
+          Navigator.of(context).pop();
+        } else {
+          showDialog(
+            context: context,
+            builder: (BuildContext context) => ErrorDialog(ret),
+          );
+        }
+      } else {
+        Navigator.of(context).pop();
+      }
+    }
+
     setState(() {
       _enabled = true;
     });
+  }
+
+  void _picturesChanged(List<String> pictures) async {
+    widget._pictures = pictures;
+    await Provider.of<CatsProvider>(context, listen: false)
+        .change({'pictures': widget._pictures}, widget.cat.uuid);
   }
 
   final _form = GlobalKey<FormState>();
@@ -290,230 +362,264 @@ class _CatEditPageState extends State<CatEditPage> {
     ];
 
     return WillPopScope(
-      onWillPop: () {
-        if (!_unsaved)
-          return Future.value(true);
-        else
-          return showDialog(
-            context: context,
-            builder: (BuildContext context) => ConfirmDialog(
-                'Zmeny neboli uložené!\nNaozaj si prajete odísť?'),
-          );
-      },
+      onWillPop: _backPressed,
       child: Scaffold(
-        appBar: AppTitleBack(callback: () {
-          _backPressed(_unsaved);
-        }),
+        appBar: AppTitleBack(callback: _backPressed),
         drawer: MainMenu(),
-        body: SingleChildScrollView(
-          child: Container(
-            padding: EdgeInsets.all(10),
-            child: Form(
-              key: _form,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: <Widget>[
-                  Heading1(widget.cat == null
-                      ? 'Pridanie mačky'
-                      : 'Upravenie mačky'),
-                  TextFormField(
-                    decoration: InputDecoration(
-                      labelText: 'Meno',
-                      enabled: _enabled,
-                    ),
-                    initialValue: widget._name,
-                    keyboardType: TextInputType.text,
-                    textInputAction: TextInputAction.next,
-                    onFieldSubmitted: (_) {
-                      FocusScope.of(context).unfocus();
-                      FocusScope.of(context).requestFocus(_ageFocus);
-                    },
-                    onSaved: (value) {
-                      widget._name = value;
-                    },
-                    onChanged: (vaue) {
-                      _unsaved = true;
-                    },
-                    validator: (value) {
-                      var ret = commonValidation(value);
-                      return ret;
-                    },
-                    readOnly: !_enabled,
-                  ),
-                  TextFormField(
-                    decoration: InputDecoration(
-                      labelText: 'Vek v mesiacoch',
-                      enabled: _enabled,
-                    ),
-                    initialValue:
-                        widget._age == null ? null : widget._age.toString(),
-                    keyboardType: TextInputType.numberWithOptions(
-                        decimal: false, signed: false),
-                    inputFormatters: [
-                      BlacklistingTextInputFormatter(RegExp("[.,-]"))
+        body: Stack(
+          children: <Widget>[
+            SingleChildScrollView(
+              child: Container(
+                padding: EdgeInsets.all(10),
+                child: Form(
+                  key: _form,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: <Widget>[
+                      Heading1(widget.cat == null
+                          ? 'Pridanie mačky'
+                          : 'Upravenie mačky'),
+                      PictureListInput(widget._pictures, _picturesChanged),
+                      SizedBox(height: 10),
+                      TextFormField(
+                        decoration: InputDecoration(
+                          labelText: 'Meno',
+                          enabled: _enabled,
+                        ),
+                        initialValue: widget._name,
+                        keyboardType: TextInputType.text,
+                        textInputAction: TextInputAction.next,
+                        onFieldSubmitted: (_) {
+                          FocusScope.of(context).unfocus();
+                          FocusScope.of(context).requestFocus(_ageFocus);
+                        },
+                        onSaved: (value) {
+                          widget._name = value;
+                        },
+                        onChanged: (vaue) {
+                          _unsaved = true;
+                          widget._nameChanged = true;
+                        },
+                        validator: (value) {
+                          var ret = commonValidation(value);
+                          return ret;
+                        },
+                        readOnly: !_enabled,
+                      ),
+                      TextFormField(
+                        decoration: InputDecoration(
+                          labelText: 'Vek v mesiacoch',
+                          enabled: _enabled,
+                        ),
+                        initialValue:
+                            widget._age == null ? null : widget._age.toString(),
+                        keyboardType: TextInputType.numberWithOptions(
+                            decimal: false, signed: false),
+                        inputFormatters: [
+                          BlacklistingTextInputFormatter(RegExp("[.,-]"))
+                        ],
+                        textInputAction: TextInputAction.next,
+                        focusNode: _ageFocus,
+                        onFieldSubmitted: (_) {
+                          FocusScope.of(context).unfocus();
+                          FocusScope.of(context)
+                              .requestFocus(_descriptionFocus);
+                        },
+                        onSaved: (value) {
+                          widget._age = int.parse(value);
+                        },
+                        onChanged: (vaue) {
+                          _unsaved = true;
+                          widget._ageChanged = true;
+                        },
+                        validator: (value) {
+                          var ret = commonValidation(value);
+                          int val = int.parse(value);
+                          if (ret == null && (val > 240 || val < 0)) {
+                            return 'Vek musí byť medzi 0 až 240 mesiacmi';
+                          }
+                          return ret;
+                        },
+                        readOnly: !_enabled,
+                      ),
+                      TextFormField(
+                        decoration: InputDecoration(
+                          labelText: 'Krátky popis',
+                          enabled: _enabled,
+                        ),
+                        maxLines: 10,
+                        initialValue: widget._description,
+                        keyboardType: TextInputType.text,
+                        textInputAction: TextInputAction.next,
+                        focusNode: _descriptionFocus,
+                        onFieldSubmitted: (_) {
+                          FocusScope.of(context).unfocus();
+                          FocusScope.of(context).requestFocus(_healthLogFocus);
+                        },
+                        onSaved: (value) {
+                          widget._description = value;
+                        },
+                        onChanged: (vaue) {
+                          _unsaved = true;
+                          widget._descriptionChanged = true;
+                        },
+                        validator: (value) {
+                          var ret = commonValidation(value);
+                          return ret;
+                        },
+                        readOnly: !_enabled,
+                      ),
+                      TextFormField(
+                        decoration: InputDecoration(
+                          labelText: 'Zdravotný záznam',
+                          enabled: _enabled,
+                        ),
+                        maxLines: 10,
+                        initialValue: widget._health_log,
+                        keyboardType: TextInputType.text,
+                        textInputAction: TextInputAction.done,
+                        onFieldSubmitted: (_) {
+                          FocusScope.of(context).unfocus();
+                        },
+                        focusNode: _healthLogFocus,
+                        onSaved: (value) {
+                          widget._health_log = value;
+                        },
+                        onChanged: (vaue) {
+                          _unsaved = true;
+                          widget._healthLogChanged = true;
+                        },
+                        readOnly: !_enabled,
+                      ),
+                      SizedBox(height: 20),
+                      ItemDropdown(
+                        'Pohlavie',
+                        sexes,
+                        widget._sex == null
+                            ? null
+                            : widget._sex ? sexes[0] : sexes[1],
+                        (e) {
+                          _unsaved = true;
+                          widget._sex = (e == sexes[0] ? true : false);
+                          widget._sexChanged = true;
+                        },
+                        noDefault: true,
+                        enabled: _enabled,
+                      ),
+                      SizedBox(height: 10),
+                      ItemDropdownWithCreate(
+                        'Plemeno',
+                        _breeds,
+                        widget._breed != null ? widget._breed.name : null,
+                        (e) {
+                          _unsaved = true;
+                          widget._breed = settingsProvider.breedFrom(name: e);
+                          widget._breedChanged = true;
+                        },
+                        _addBreed,
+                        enabled: _enabled,
+                      ),
+                      SizedBox(height: 10),
+                      ItemDropdownWithCreate(
+                        'Farba srsti',
+                        _colours,
+                        widget._colour != null ? widget._colour.name : null,
+                        (e) {
+                          _unsaved = true;
+                          widget._colour = settingsProvider.colourFrom(name: e);
+                          widget._colourChanged = true;
+                        },
+                        _addColour,
+                        enabled: _enabled,
+                      ),
+                      SizedBox(height: 10),
+                      ItemDropdownWithCreate(
+                        'Zdravotný stav',
+                        _health_statuses,
+                        widget._health_status != null
+                            ? widget._health_status.name
+                            : null,
+                        (e) {
+                          _unsaved = true;
+                          widget._health_status =
+                              settingsProvider.healthStatusFrom(name: e);
+                          widget._healthStatusChanged = true;
+                        },
+                        _addHealthStatus,
+                        enabled: _enabled,
+                      ),
+                      SizedBox(height: 10),
+                      SwitchListTile(
+                        title: Text('Kastrovaná'),
+                        value: widget._castrated == null
+                            ? false
+                            : widget._castrated,
+                        onChanged: _enabled
+                            ? (value) {
+                                setState(() {
+                                  _unsaved = true;
+                                  widget._castrated = value;
+                                  widget._castratedChanged = true;
+                                });
+                              }
+                            : null,
+                        contentPadding: EdgeInsets.zero,
+                      ),
+                      SwitchListTile(
+                        title: Text('Očkovaná'),
+                        value: widget._vaccinated == null
+                            ? false
+                            : widget._vaccinated,
+                        onChanged: _enabled
+                            ? (value) {
+                                setState(() {
+                                  _unsaved = true;
+                                  widget._vaccinated = value;
+                                  widget._vaccinatedChanged = true;
+                                });
+                              }
+                            : null,
+                        contentPadding: EdgeInsets.zero,
+                      ),
+                      SwitchListTile(
+                        title: Text('Odčervená'),
+                        value:
+                            widget._dewormed == null ? false : widget._dewormed,
+                        onChanged: _enabled
+                            ? (value) {
+                                setState(() {
+                                  _unsaved = true;
+                                  widget._dewormed = value;
+                                  widget._dewormedChanged = true;
+                                });
+                              }
+                            : null,
+                        contentPadding: EdgeInsets.zero,
+                      ),
+                      SwitchListTile(
+                        title: Text('Na adopciu'),
+                        value:
+                            widget._adoptive == null ? false : widget._adoptive,
+                        onChanged: _enabled
+                            ? (value) {
+                                setState(() {
+                                  _unsaved = true;
+                                  widget._adoptive = value;
+                                  widget._adoptiveChanged = true;
+                                });
+                              }
+                            : null,
+                        contentPadding: EdgeInsets.zero,
+                      ),
+                      SizedBox(height: 20),
+                      _buttons()
                     ],
-                    textInputAction: TextInputAction.next,
-                    focusNode: _ageFocus,
-                    onFieldSubmitted: (_) {
-                      FocusScope.of(context).unfocus();
-                      FocusScope.of(context).requestFocus(_descriptionFocus);
-                    },
-                    onSaved: (value) {
-                      widget._age = int.parse(value);
-                    },
-                    onChanged: (vaue) {
-                      _unsaved = true;
-                    },
-                    validator: (value) {
-                      var ret = commonValidation(value);
-                      int val = int.parse(value);
-                      if (ret == null && (val > 240 || val < 0)) {
-                        return 'Vek musí byť medzi 0 až 240 mesiacmi';
-                      }
-                      return ret;
-                    },
-                    readOnly: !_enabled,
                   ),
-                  TextFormField(
-                    decoration: InputDecoration(
-                      labelText: 'Krátky popis',
-                      enabled: _enabled,
-                    ),
-                    maxLines: 4,
-                    initialValue: widget._description,
-                    keyboardType: TextInputType.text,
-                    textInputAction: TextInputAction.next,
-                    focusNode: _descriptionFocus,
-                    onFieldSubmitted: (_) {
-                      FocusScope.of(context).unfocus();
-                      FocusScope.of(context).requestFocus(_healthLogFocus);
-                    },
-                    onSaved: (value) {
-                      widget._description = value;
-                    },
-                    onChanged: (vaue) {
-                      _unsaved = true;
-                    },
-                    validator: (value) {
-                      var ret = commonValidation(value);
-                      return ret;
-                    },
-                    readOnly: !_enabled,
-                  ),
-                  TextFormField(
-                    decoration: InputDecoration(
-                      labelText: 'Zdravotný záznam',
-                      enabled: _enabled,
-                    ),
-                    maxLines: 4,
-                    initialValue: widget._health_log,
-                    keyboardType: TextInputType.text,
-                    textInputAction: TextInputAction.done,
-                    onFieldSubmitted: (_) {
-                      FocusScope.of(context).unfocus();
-                    },
-                    focusNode: _healthLogFocus,
-                    onSaved: (value) {
-                      widget._health_log = value;
-                    },
-                    onChanged: (vaue) {
-                      _unsaved = true;
-                    },
-                    readOnly: !_enabled,
-                  ),
-                  SizedBox(height: 20),
-                  ItemDropdown(
-                    'Pohlavie',
-                    sexes,
-                    widget._currentSex,
-                    (e) {
-                      _unsaved = true;
-                      widget._currentSex = e;
-                    },
-                    noDefault: true,
-                    enabled: _enabled,
-                  ),
-                  SizedBox(height: 10),
-                  ItemDropdownWithCreate(
-                    'Plemeno',
-                    _breeds,
-                    widget._currentBreed,
-                    (e) => (widget._currentBreed = e),
-                    _addBreed,
-                    enabled: _enabled,
-                  ),
-                  SizedBox(height: 10),
-                  ItemDropdownWithCreate(
-                    'Farba srsti',
-                    _colours,
-                    widget._currentColour,
-                    (e) {
-                      _unsaved = true;
-                      widget._currentColour = e;
-                    },
-                    _addColour,
-                    enabled: _enabled,
-                  ),
-                  SizedBox(height: 10),
-                  ItemDropdownWithCreate(
-                    'Zdravotný stav',
-                    _health_statuses,
-                    widget._currentHealthStatus,
-                    (e) {
-                      _unsaved = true;
-                      widget._currentHealthStatus = e;
-                    },
-                    _addHealthStatus,
-                    enabled: _enabled,
-                  ),
-                  SizedBox(height: 10),
-                  SwitchListTile(
-                    title: Text('Kastrovaná'),
-                    value:
-                        widget._castrated == null ? false : widget._castrated,
-                    onChanged: _enabled
-                        ? (value) {
-                            setState(() {
-                              _unsaved = true;
-                              widget._castrated = value;
-                            });
-                          }
-                        : null,
-                    contentPadding: EdgeInsets.zero,
-                  ),
-                  SwitchListTile(
-                    title: Text('Očkovaná'),
-                    value:
-                        widget._vaccinated == null ? false : widget._vaccinated,
-                    onChanged: _enabled
-                        ? (value) {
-                            setState(() {
-                              _unsaved = true;
-                              widget._vaccinated = value;
-                            });
-                          }
-                        : null,
-                    contentPadding: EdgeInsets.zero,
-                  ),
-                  SwitchListTile(
-                    title: Text('Odčervená'),
-                    value: widget._dewormed == null ? false : widget._dewormed,
-                    onChanged: _enabled
-                        ? (value) {
-                            setState(() {
-                              _unsaved = true;
-                              widget._dewormed = value;
-                            });
-                          }
-                        : null,
-                    contentPadding: EdgeInsets.zero,
-                  ),
-                  SizedBox(height: 20),
-                  _buttons()
-                ],
+                ),
               ),
             ),
-          ),
+            !_enabled ? Loading() : Container(),
+          ],
         ),
       ),
     );

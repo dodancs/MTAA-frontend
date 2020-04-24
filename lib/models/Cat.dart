@@ -21,14 +21,14 @@ class Cat {
   int commentsNum;
 
   Cat({
-    @required this.uuid,
+    this.uuid,
     @required this.name,
     @required this.age,
     @required this.sex,
     @required this.description,
     @required this.adoptive,
     @required this.pictures,
-    @required this.commentsNum,
+    this.commentsNum,
     @required this.breed,
     @required this.health_status,
     @required this.castrated,

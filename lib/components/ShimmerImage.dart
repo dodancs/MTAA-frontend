@@ -6,8 +6,8 @@ import 'package:CiliCat/providers/AuthProvider.dart';
 import 'package:shimmer/shimmer.dart';
 
 class ShimmerImage extends StatelessWidget {
-  String picture;
-  double width, height;
+  final String picture;
+  final double width, height;
 
   ShimmerImage({this.picture, this.width, this.height});
 

@@ -1,4 +1,5 @@
 import 'package:CiliCat/providers/AuthProvider.dart';
+import 'package:CiliCat/providers/PicturesProvider.dart';
 import 'package:CiliCat/providers/SettingsProvider.dart';
 import 'package:CiliCat/providers/CatsProvider.dart';
 import 'package:CiliCat/screens/AuthPage.dart';
@@ -23,6 +24,10 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProxyProvider<AuthProvider, SettingsProvider>(
           create: (_) => SettingsProvider(),
           update: (_, auth, settings) => settings..update(auth),
+        ),
+        ChangeNotifierProxyProvider<AuthProvider, PicturesProvider>(
+          create: (_) => PicturesProvider(),
+          update: (_, auth, pictures) => pictures..update(auth),
         ),
         ChangeNotifierProxyProvider2<AuthProvider, SettingsProvider,
             CatsProvider>(

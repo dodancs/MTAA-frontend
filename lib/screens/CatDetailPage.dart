@@ -34,9 +34,11 @@ class _CatDetailPageState extends State<CatDetailPage> {
     final catsProvider = Provider.of<CatsProvider>(context);
     final authProvider = Provider.of<AuthProvider>(context);
 
-    Cat _cat = catsProvider.catDetails(widget._uuid);
+    final Cat _cat = catsProvider.catDetails(widget._uuid);
 
     bool _liked = authProvider.getCurrentUser.favourites.contains(widget._uuid);
+
+    if (_cat == null) return Container();
 
     return Scaffold(
       appBar: AppTitleBack(),

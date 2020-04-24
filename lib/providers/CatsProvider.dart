@@ -256,6 +256,72 @@ class CatsProvider with ChangeNotifier {
     return null;
   }
 
+  Future add(Cat cat) async {
+    http.Response tmp;
+    try {
+      tmp = await http.post(
+        Uri.http(
+          API_URL,
+          '/cats',
+        ),
+        headers: {
+          'Authorization': _auth.getTokenType + ' ' + _auth.getToken,
+          'Content-Type': 'application/json',
+        },
+        body: json.encode({
+          'name': cat.name,
+          'age': cat.age,
+          'sex': cat.sex,
+          'description': cat.description,
+          'adoptive': cat.adoptive,
+          'pictures': cat.pictures,
+          'breed': cat.breed.id,
+          'colour': cat.colour.id,
+          'health_status': cat.health_status.id,
+          'castrated': cat.castrated,
+          'vaccinated': cat.vaccinated,
+          'dewormed': cat.dewormed,
+          'health_log': cat.health_log,
+        }),
+      );
+    } catch (error) {
+      print(error);
+      return [
+        false,
+        {'error': 'Nastala serverová chyba'},
+      ];
+    }
+
+    var response;
+    try {
+      response = json.decode(tmp.body);
+    } catch (_) {
+      return [
+        false,
+        {'error': 'Nastala serverová chyba'},
+      ];
+    }
+
+    if (tmp.statusCode == 200 && response['uuid'] != null) {
+      cat.uuid = response['uuid'];
+      _cats.add(cat);
+      notifyListeners();
+      return [
+        true,
+        cat.uuid,
+      ];
+    } else if (tmp.statusCode == 401 && response['error'] != null)
+      return [
+        false,
+        {'error': response['error']},
+      ];
+    else
+      return [
+        false,
+        {'error': 'Nastala serverová chyba'},
+      ];
+  }
+
   Future<void> like(Cat cat, bool liked) async {
     String request = '/cats/' + cat.uuid + '/';
     if (liked) {
@@ -278,6 +344,38 @@ class CatsProvider with ChangeNotifier {
     }
     await _auth.refreshUser();
     notifyListeners();
+  }
+
+  Future change(Map<String, dynamic> changes, String uuid) async {
+    try {
+      http.Response tmp = await http.put(
+        Uri.http(
+          API_URL,
+          '/cats/' + uuid,
+        ),
+        headers: {
+          'Authorization': _auth.getTokenType + ' ' + _auth.getToken,
+          'Content-Type': 'application/json',
+        },
+        body: json.encode(changes),
+      );
+
+      if (tmp.statusCode != 200) {
+        try {
+          var response = json.decode(tmp.body);
+          return response['error'];
+        } catch (_) {
+          return 'Nastala serverová chyba';
+        }
+      }
+    } catch (error) {
+      print(error);
+      return 'Nastala serverová chyba';
+    }
+
+    await getCats();
+
+    return null;
   }
 
   void update(AuthProvider auth, SettingsProvider settings) async {
