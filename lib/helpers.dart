@@ -8,6 +8,6 @@ bool isEmail(String em) {
 }
 
 dynamic commonValidation(String value) {
-  if (value.isEmpty) return 'Pole nemôže byť prázdne!';
+  if (value == null || value.isEmpty) return 'Pole nemôže byť prázdne!';
   return null;
 }

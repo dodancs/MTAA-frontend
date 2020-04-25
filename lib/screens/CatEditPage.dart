@@ -1,6 +1,7 @@
 import 'package:CiliCat/components/AppTitleBack.dart';
 import 'package:CiliCat/components/ConfirmDialog.dart';
 import 'package:CiliCat/components/ErrorDialog.dart';
+import 'package:CiliCat/components/ErrorMessage.dart';
 import 'package:CiliCat/components/Heading1.dart';
 import 'package:CiliCat/components/ItemDropdown.dart';
 import 'package:CiliCat/components/ItemDropdownWithCreate.dart';
@@ -16,6 +17,7 @@ import 'package:CiliCat/models/HealthStatus.dart';
 import 'package:CiliCat/providers/CatsProvider.dart';
 import 'package:CiliCat/providers/PicturesProvider.dart';
 import 'package:CiliCat/providers/SettingsProvider.dart';
+import 'package:CiliCat/screens/CatDetailPage.dart';
 import 'package:CiliCat/settings.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -41,16 +43,18 @@ class CatEditPage extends StatefulWidget {
   bool _colourChanged = false;
   HealthStatus _health_status;
   bool _healthStatusChanged = false;
-  bool _castrated;
+  bool _castrated = false;
   bool _castratedChanged = false;
-  bool _vaccinated;
+  bool _vaccinated = false;
   bool _vaccinatedChanged = false;
-  bool _dewormed;
+  bool _dewormed = false;
   bool _dewormedChanged = false;
-  bool _adoptive;
+  bool _adoptive = false;
   bool _adoptiveChanged = false;
   List<String> _pictures;
   bool _picturesChanged = false;
+
+  bool isValidated = false;
 
   CatEditPage({this.cat}) {
     if (cat != null) {
@@ -198,6 +202,8 @@ class _CatEditPageState extends State<CatEditPage> {
       _enabled = false;
     });
 
+    List<String> pictures = [...widget.cat.pictures];
+
     String ret = await Provider.of<CatsProvider>(context, listen: false)
         .delete(widget.cat.uuid);
 
@@ -209,14 +215,22 @@ class _CatEditPageState extends State<CatEditPage> {
       );
     } else {
       Navigator.of(context).pop();
+      Navigator.of(context).pop();
     }
   }
 
   void _submit() async {
     setState(() {
       _enabled = false;
+      widget.isValidated = true;
     });
-    if (!_form.currentState.validate()) {
+    if (!_form.currentState.validate() ||
+        widget._pictures == null ||
+        widget._pictures.isEmpty ||
+        widget._sex == null ||
+        widget._breed == null ||
+        widget._colour == null ||
+        widget._health_status == null) {
       setState(() {
         _enabled = true;
       });
@@ -226,7 +240,7 @@ class _CatEditPageState extends State<CatEditPage> {
 
     // creating new cat
     if (widget.cat == null) {
-      var ret = Provider.of<CatsProvider>(context, listen: false).add(Cat(
+      var ret = await Provider.of<CatsProvider>(context, listen: false).add(Cat(
         name: widget._name,
         age: widget._age,
         description: widget._description,
@@ -240,7 +254,23 @@ class _CatEditPageState extends State<CatEditPage> {
         dewormed: widget._dewormed,
         adoptive: widget._adoptive,
         pictures: widget._pictures,
+        commentsNum: 0,
       ));
+
+      if (ret[0]) {
+        Navigator.of(context).pop();
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => CatDetailPage(ret[1]),
+          ),
+        );
+      } else {
+        showDialog(
+          context: context,
+          builder: (BuildContext context) => ErrorDialog(ret[1]),
+        );
+      }
     } else {
       Map<String, dynamic> changes = {};
       if (widget._nameChanged) changes.addAll({'name': widget._name});
@@ -288,9 +318,13 @@ class _CatEditPageState extends State<CatEditPage> {
   }
 
   void _picturesChanged(List<String> pictures) async {
-    widget._pictures = pictures;
-    await Provider.of<CatsProvider>(context, listen: false)
-        .change({'pictures': widget._pictures}, widget.cat.uuid);
+    setState(() {
+      widget._pictures = pictures;
+    });
+
+    if (widget.cat != null)
+      await Provider.of<CatsProvider>(context, listen: false)
+          .change({'pictures': widget._pictures}, widget.cat.uuid);
   }
 
   final _form = GlobalKey<FormState>();
@@ -380,6 +414,11 @@ class _CatEditPageState extends State<CatEditPage> {
                           ? 'Pridanie mačky'
                           : 'Upravenie mačky'),
                       PictureListInput(widget._pictures, _picturesChanged),
+                      ErrorMessage(
+                          'Mačka musí mať obrázok!',
+                          widget.isValidated &&
+                              (widget._pictures == null ||
+                                  widget._pictures.isEmpty)),
                       SizedBox(height: 10),
                       TextFormField(
                         decoration: InputDecoration(
@@ -434,8 +473,9 @@ class _CatEditPageState extends State<CatEditPage> {
                         },
                         validator: (value) {
                           var ret = commonValidation(value);
-                          int val = int.parse(value);
-                          if (ret == null && (val > 240 || val < 0)) {
+                          if (ret == null &&
+                              (int.parse(value) > 240 ||
+                                  int.parse(value) < 0)) {
                             return 'Vek musí byť medzi 0 až 240 mesiacmi';
                           }
                           return ret;
@@ -506,6 +546,8 @@ class _CatEditPageState extends State<CatEditPage> {
                         noDefault: true,
                         enabled: _enabled,
                       ),
+                      ErrorMessage('Pohlavie nebolo nastavené!',
+                          widget.isValidated && (widget._sex == null)),
                       SizedBox(height: 10),
                       ItemDropdownWithCreate(
                         'Plemeno',
@@ -519,6 +561,8 @@ class _CatEditPageState extends State<CatEditPage> {
                         _addBreed,
                         enabled: _enabled,
                       ),
+                      ErrorMessage('Plemeno nebolo nastavené!',
+                          widget.isValidated && (widget._breed == null)),
                       SizedBox(height: 10),
                       ItemDropdownWithCreate(
                         'Farba srsti',
@@ -532,6 +576,8 @@ class _CatEditPageState extends State<CatEditPage> {
                         _addColour,
                         enabled: _enabled,
                       ),
+                      ErrorMessage('Farba srsti nebola nastavená!',
+                          widget.isValidated && (widget._colour == null)),
                       SizedBox(height: 10),
                       ItemDropdownWithCreate(
                         'Zdravotný stav',
@@ -548,6 +594,10 @@ class _CatEditPageState extends State<CatEditPage> {
                         _addHealthStatus,
                         enabled: _enabled,
                       ),
+                      ErrorMessage(
+                          'Zdravotný stav nebol nastavený!',
+                          widget.isValidated &&
+                              (widget._health_status == null)),
                       SizedBox(height: 10),
                       SwitchListTile(
                         title: Text('Kastrovaná'),

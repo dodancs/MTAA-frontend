@@ -215,21 +215,13 @@ class CatsProvider with ChangeNotifier {
     return false;
   }
 
-  Cat catDetails(String uuid) {
-    if (_cats == null) return null;
-
-    return _cats.firstWhere((cat) {
-      return cat.uuid == uuid;
-    }, orElse: () => null);
-  }
-
-  Future delete(String uuid) async {
+  Future updateCat(String uuid) async {
     http.Response tmp;
     try {
-      tmp = await http.delete(
+      tmp = await http.get(
         Uri.http(
           API_URL,
-          '/cats/' + uuid + '/',
+          '/cats/' + uuid,
         ),
         headers: {
           'Authorization': _auth.getTokenType + ' ' + _auth.getToken,
@@ -247,8 +239,71 @@ class CatsProvider with ChangeNotifier {
       return 'Nastala serverová chyba';
     }
 
-    if (tmp.statusCode == 401 && response['error'] != null)
+    if (tmp.statusCode == 200) {
+      Cat cat = Cat(
+        uuid: response['uuid'],
+        name: response['name'],
+        age: response['age'],
+        sex: response['sex'],
+        description: response['description'],
+        adoptive: response['adoptive'],
+        pictures: List<String>.from(response['pictures']),
+        commentsNum: response['comments'],
+        breed: _settings.breedFrom(id: response['breed']),
+        colour: _settings.colourFrom(id: response['colour']),
+        health_status:
+            _settings.healthStatusFrom(id: response['health_status']),
+        castrated: response['castrated'],
+        vaccinated: response['vaccinated'],
+        dewormed: response['dewormed'],
+        health_log: response['health_log'],
+      );
+
+      // remove old cat
+      _cats.removeWhere((c) => (c.uuid == uuid));
+      _cats.add(cat);
+
+      notifyListeners();
+      return null;
+    } else {
       return response['error'];
+    }
+  }
+
+  Cat catDetails(String uuid) {
+    if (_cats == null) return null;
+
+    return _cats.firstWhere((cat) {
+      return cat.uuid == uuid;
+    }, orElse: () => null);
+  }
+
+  Future delete(String uuid) async {
+    http.Response tmp;
+    try {
+      tmp = await http.delete(
+        Uri.http(
+          API_URL,
+          '/cats/' + uuid,
+        ),
+        headers: {
+          'Authorization': _auth.getTokenType + ' ' + _auth.getToken,
+        },
+      );
+    } catch (error) {
+      print(error);
+      return 'Nastala serverová chyba';
+    }
+
+    if (tmp.statusCode == 401) {
+      var response;
+      try {
+        response = json.decode(tmp.body);
+      } catch (_) {
+        return 'Nastala serverová chyba';
+      }
+      return response['error'];
+    }
 
     _cats.removeWhere((c) => c.uuid == uuid);
 
@@ -288,7 +343,7 @@ class CatsProvider with ChangeNotifier {
       print(error);
       return [
         false,
-        {'error': 'Nastala serverová chyba'},
+        'Nastala serverová chyba',
       ];
     }
 
@@ -298,7 +353,7 @@ class CatsProvider with ChangeNotifier {
     } catch (_) {
       return [
         false,
-        {'error': 'Nastala serverová chyba'},
+        'Nastala serverová chyba',
       ];
     }
 
@@ -313,12 +368,12 @@ class CatsProvider with ChangeNotifier {
     } else if (tmp.statusCode == 401 && response['error'] != null)
       return [
         false,
-        {'error': response['error']},
+        response['error'],
       ];
     else
       return [
         false,
-        {'error': 'Nastala serverová chyba'},
+        'Nastala serverová chyba',
       ];
   }
 
@@ -373,9 +428,7 @@ class CatsProvider with ChangeNotifier {
       return 'Nastala serverová chyba';
     }
 
-    await getCats();
-
-    return null;
+    return await updateCat(uuid);
   }
 
   void update(AuthProvider auth, SettingsProvider settings) async {
