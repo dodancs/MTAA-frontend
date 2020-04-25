@@ -5,6 +5,7 @@ import 'package:CiliCat/providers/CatsProvider.dart';
 import 'package:CiliCat/screens/AuthPage.dart';
 import 'package:CiliCat/screens/HelpPage.dart';
 import 'package:CiliCat/screens/HomePage.dart';
+import 'package:CiliCat/screens/ProfilePage.dart';
 import 'package:CiliCat/screens/SplashScreen.dart';
 import 'package:CiliCat/settings.dart';
 import 'package:flutter/material.dart';
@@ -56,6 +57,7 @@ class MyApp extends StatelessWidget {
                   ),
             routes: {
               HelpPage.screenRoute: (context) => HelpPage(),
+              ProfilePage.screenRoute: (context) => ProfilePage(),
             },
           );
         },

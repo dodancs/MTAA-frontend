@@ -16,7 +16,12 @@
         }, {
             "label": "Flutter: generate APK and deploy",
             "type": "shell",
-            "command": "flutter build apk --split-per-abi;flutter install",
+            "command": "flutter build apk --split-per-abi;flutter install -d 192.168.0.122:5555",
+            "problemMatcher": []
+        }, {
+            "label": "Flutter: deploy to App Store",
+            "type": "shell",
+            "command": "flutter build appbundle",
             "problemMatcher": []
         }
     ]

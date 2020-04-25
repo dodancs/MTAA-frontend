@@ -3,6 +3,7 @@ import 'package:CiliCat/components/MenuItem.dart';
 import 'package:CiliCat/components/UserMenuCard.dart';
 import 'package:CiliCat/providers/AuthProvider.dart';
 import 'package:CiliCat/screens/HelpPage.dart';
+import 'package:CiliCat/screens/ProfilePage.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -66,6 +67,7 @@ class MainMenu extends StatelessWidget {
       title: 'Môj profil',
       callback: () {
         Navigator.pop(context);
+        Navigator.pushNamed(context, ProfilePage.screenRoute);
       },
     ));
     items.add(MenuItem(
