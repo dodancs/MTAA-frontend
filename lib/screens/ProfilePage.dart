@@ -38,7 +38,7 @@ class _ProfilePageState extends State<ProfilePage> {
     return WillPopScope(
       onWillPop: () async {
         await catsProvider.getCats();
-        return true;
+        return Future.value(true);
       },
       child: Scaffold(
         appBar: AppTitleBack(

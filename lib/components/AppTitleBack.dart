@@ -22,7 +22,7 @@ class AppTitleBack extends StatelessWidget with PreferredSizeWidget {
           if (this.callback == null) {
             Navigator.of(context).pop();
           } else {
-            this.callback();
+            await this.callback();
           }
         },
       ),
