@@ -62,14 +62,18 @@ class _HomePageState extends State<HomePage> {
 
   Future<void> _filterUpdate(Map<String, dynamic> settings,
       CatsProvider catsProvider, SettingsProvider settingsProvider) async {
+    Breed b = settingsProvider.breedFrom(name: settings['breed']);
+    Colour c = settingsProvider.colourFrom(name: settings['colour']);
+    HealthStatus h =
+        settingsProvider.healthStatusFrom(name: settings['health_status']);
+
     Map<String, dynamic> map = {
       'sex': settings['sex'] == null
           ? null
           : settings['sex'] == sexes[0] ? true : false,
-      'breed': settingsProvider.breedFrom(name: settings['breed']).id,
-      'colour': settingsProvider.colourFrom(name: settings['colour']).id,
-      'health_status':
-          settingsProvider.healthStatusFrom(name: settings['health_status']).id,
+      'breed': b == null ? null : b.id,
+      'colour': c == null ? null : c.id,
+      'health_status': h == null ? null : h.id,
       'vaccinated': settings['vaccinated'] == null
           ? null
           : settings['vaccinated'] == bools[0] ? false : true,

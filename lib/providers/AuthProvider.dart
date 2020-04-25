@@ -90,7 +90,7 @@ class AuthProvider with ChangeNotifier {
         lastname: response['lastname'],
         activated: response['activated'],
         admin: response['admin'],
-        donations: response['donations'],
+        donations: response['donations'].toDouble(),
         picture: response['picture'],
         favourites: List<String>.from(response['favourites']),
         created_at: DateTime.parse(response['created_at']),
