@@ -6,7 +6,6 @@ import 'package:CiliCat/components/Heading1.dart';
 import 'package:CiliCat/components/ItemDropdown.dart';
 import 'package:CiliCat/components/ItemDropdownWithCreate.dart';
 import 'package:CiliCat/components/Loading.dart';
-import 'package:CiliCat/components/MainMenu.dart';
 import 'package:CiliCat/components/PictureListInput.dart';
 import 'package:CiliCat/components/TextInputDialog.dart';
 import 'package:CiliCat/helpers.dart';
@@ -402,7 +401,6 @@ class _CatEditPageState extends State<CatEditPage> {
       onWillPop: _backPressed,
       child: Scaffold(
         appBar: AppTitleBack(callback: _backPressed),
-        drawer: MainMenu(),
         body: GestureDetector(
           onTap: () => FocusScope.of(context).requestFocus(new FocusNode()),
           child: Stack(

@@ -1,7 +1,6 @@
 import 'package:CiliCat/cat_font_icons.dart';
 import 'package:CiliCat/components/AppTitleBack.dart';
 import 'package:CiliCat/components/Heading1.dart';
-import 'package:CiliCat/components/MainMenu.dart';
 import 'package:CiliCat/settings.dart';
 import 'package:flutter/material.dart';
 
@@ -12,7 +11,6 @@ class HelpPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppTitleBack(),
-      drawer: MainMenu(),
       body: ListView(
           padding: EdgeInsets.only(left: 16, right: 16, bottom: 16),
           children: <Widget>[

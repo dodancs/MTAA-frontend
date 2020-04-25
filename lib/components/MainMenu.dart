@@ -4,6 +4,7 @@ import 'package:CiliCat/components/UserMenuCard.dart';
 import 'package:CiliCat/providers/AuthProvider.dart';
 import 'package:CiliCat/screens/HelpPage.dart';
 import 'package:CiliCat/screens/ProfilePage.dart';
+import 'package:CiliCat/screens/ShelterNeedsPage.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -35,6 +36,7 @@ class MainMenu extends StatelessWidget {
       title: 'Čo nám chýba',
       callback: () {
         Navigator.pop(context);
+        Navigator.pushNamed(context, ShelterNeedsPage.screenRoute);
       },
     ));
     // items.add(MenuItem(

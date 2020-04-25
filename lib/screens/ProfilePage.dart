@@ -1,6 +1,6 @@
 import 'package:CiliCat/components/AppTitleBack.dart';
 import 'package:CiliCat/components/CatCard.dart';
-import 'package:CiliCat/components/MainMenu.dart';
+import 'package:CiliCat/components/Heading1.dart';
 import 'package:CiliCat/components/UserCard.dart';
 import 'package:CiliCat/providers/AuthProvider.dart';
 import 'package:CiliCat/providers/CatsProvider.dart';
@@ -47,11 +47,11 @@ class _ProfilePageState extends State<ProfilePage> {
             Navigator.of(context).pop();
           },
         ),
-        drawer: MainMenu(),
         body: SingleChildScrollView(
           child: Column(
             children: <Widget>[
               UserCard(authProvider.getCurrentUser),
+              Heading1('Obľúbené mačky'),
               ...authProvider.getCurrentUser.favourites
                   .map((f) => CatCard(catsProvider.catDetails(f), true))
                   .toList()

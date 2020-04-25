@@ -2,10 +2,12 @@ import 'package:CiliCat/providers/AuthProvider.dart';
 import 'package:CiliCat/providers/PicturesProvider.dart';
 import 'package:CiliCat/providers/SettingsProvider.dart';
 import 'package:CiliCat/providers/CatsProvider.dart';
+import 'package:CiliCat/providers/ShelterNeedsProvider.dart';
 import 'package:CiliCat/screens/AuthPage.dart';
 import 'package:CiliCat/screens/HelpPage.dart';
 import 'package:CiliCat/screens/HomePage.dart';
 import 'package:CiliCat/screens/ProfilePage.dart';
+import 'package:CiliCat/screens/ShelterNeedsPage.dart';
 import 'package:CiliCat/screens/SplashScreen.dart';
 import 'package:CiliCat/settings.dart';
 import 'package:flutter/material.dart';
@@ -29,6 +31,10 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProxyProvider<AuthProvider, PicturesProvider>(
           create: (_) => PicturesProvider(),
           update: (_, auth, pictures) => pictures..update(auth),
+        ),
+        ChangeNotifierProxyProvider<AuthProvider, ShelterneedsProvider>(
+          create: (_) => ShelterneedsProvider(),
+          update: (_, auth, needs) => needs..update(auth),
         ),
         ChangeNotifierProxyProvider2<AuthProvider, SettingsProvider,
             CatsProvider>(
@@ -58,6 +64,7 @@ class MyApp extends StatelessWidget {
             routes: {
               HelpPage.screenRoute: (context) => HelpPage(),
               ProfilePage.screenRoute: (context) => ProfilePage(),
+              ShelterNeedsPage.screenRoute: (context) => ShelterNeedsPage(),
             },
           );
         },

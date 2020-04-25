@@ -3,7 +3,6 @@ import 'package:CiliCat/components/AppTitleBack.dart';
 import 'package:CiliCat/components/Heading1.dart';
 import 'package:CiliCat/components/Heading2.dart';
 import 'package:CiliCat/components/InfoSection.dart';
-import 'package:CiliCat/components/MainMenu.dart';
 import 'package:CiliCat/components/ShimmerImage.dart';
 import 'package:CiliCat/models/Cat.dart';
 import 'package:CiliCat/providers/AuthProvider.dart';
@@ -54,7 +53,6 @@ class _CatDetailPageState extends State<CatDetailPage> {
       onWillPop: _backPressed,
       child: Scaffold(
         appBar: AppTitleBack(callback: _backPressed),
-        drawer: MainMenu(),
         body: SingleChildScrollView(
           child: Column(
             children: <Widget>[
@@ -154,6 +152,7 @@ class _CatDetailPageState extends State<CatDetailPage> {
                 children: <Widget>[
                   MaterialButton(
                     child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
                       children: <Widget>[
                         Icon(
                           _liked ? Icons.favorite : Icons.favorite_border,
@@ -175,6 +174,7 @@ class _CatDetailPageState extends State<CatDetailPage> {
                   ),
                   MaterialButton(
                     child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
                       children: <Widget>[
                         Icon(
                           Icons.share,
@@ -192,6 +192,7 @@ class _CatDetailPageState extends State<CatDetailPage> {
                   ),
                   MaterialButton(
                     child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
                       children: <Widget>[
                         Icon(CatFont.cat),
                         Padding(
