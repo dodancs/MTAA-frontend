@@ -1,7 +1,7 @@
 name: CiliCat
 description: A new Flutter project.
 
-version: 1.0.1+13
+version: 1.0.1+14
 
 environment:
   sdk: ">=2.3.0 <3.0.0"
@@ -23,6 +23,7 @@ dependencies:
   image_picker: ^0.6.5+2
   mime_type: ^0.3.0
   dio: ^3.0.9
+  fluttertoast: ^4.0.1
 
 dev_dependencies:
   flutter_test:

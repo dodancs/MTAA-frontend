@@ -13,6 +13,8 @@ import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flare_flutter/flare_actor.dart';
 import 'package:flare_flutter/flare_controls.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:provider/provider.dart';
 
 class CatDetailPage extends StatefulWidget {
@@ -188,23 +190,64 @@ class _CatDetailPageState extends State<CatDetailPage> {
                     ),
                     color: Colors.white,
                     padding: EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                    onPressed: () {},
+                    onPressed: () {
+                      Clipboard.setData(ClipboardData(
+                        text: 'Na ČiliCat som našiel mačičku ' +
+                            _cat.name +
+                            '. Choď si ju pozrieť!',
+                      ));
+                      Fluttertoast.showToast(
+                        msg: 'Informácie boli skopírované!',
+                        toastLength: Toast.LENGTH_SHORT,
+                        gravity: ToastGravity.CENTER,
+                        timeInSecForIosWeb: 1,
+                        backgroundColor: palette,
+                        textColor: Colors.white,
+                        fontSize: 16.0,
+                      );
+                    },
                   ),
-                  MaterialButton(
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: <Widget>[
-                        Icon(CatFont.cat),
-                        Padding(
-                          padding: EdgeInsets.only(left: 8),
-                          child: Text('Adoptovať'),
-                        ),
-                      ],
-                    ),
-                    color: palette,
-                    padding: EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                    onPressed: () {},
-                  ),
+                  _cat.adoptive
+                      ? MaterialButton(
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: <Widget>[
+                              Icon(CatFont.cat),
+                              Padding(
+                                padding: EdgeInsets.only(left: 8),
+                                child: Text('Adoptovať'),
+                              ),
+                            ],
+                          ),
+                          color: palette,
+                          padding: EdgeInsets.symmetric(
+                              horizontal: 16, vertical: 10),
+                          onPressed: () {
+                            showDialog(
+                              context: context,
+                              builder: (BuildContext context) => AlertDialog(
+                                title: Text('Ďakujeme za záujem!'),
+                                content: RichText(
+                                  text: TextSpan(
+                                    text:
+                                        'Ak si chcete túto mačku adoptovať, ozvite sa nám na telefónnom čísle:\n\n+421 920 123 456\n\nĎakujeme!',
+                                    style: TextStyle(
+                                      color: Colors.black,
+                                      fontSize: 16,
+                                    ),
+                                  ),
+                                ),
+                                actions: <Widget>[
+                                  FlatButton(
+                                      onPressed: () =>
+                                          Navigator.of(context).pop(),
+                                      child: Text('Ok'))
+                                ],
+                              ),
+                            );
+                          },
+                        )
+                      : Container(),
                 ],
               ),
               Container(

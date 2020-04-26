@@ -5,6 +5,8 @@ import 'package:CiliCat/providers/CatsProvider.dart';
 import 'package:CiliCat/screens/CatDetailPage.dart';
 import 'package:CiliCat/settings.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:provider/provider.dart';
 
 class CatCard extends StatelessWidget {
@@ -135,12 +137,53 @@ class CatCard extends StatelessWidget {
                                     Icons.share,
                                     color: palette[600],
                                   ),
-                                  onPressed: () {},
+                                  onPressed: () {
+                                    Clipboard.setData(ClipboardData(
+                                      text: 'Na ČiliCat som našiel mačičku ' +
+                                          _cat.name +
+                                          '. Choď si ju pozrieť!',
+                                    ));
+                                    Fluttertoast.showToast(
+                                      msg: 'Informácie boli skopírované!',
+                                      toastLength: Toast.LENGTH_SHORT,
+                                      gravity: ToastGravity.CENTER,
+                                      timeInSecForIosWeb: 1,
+                                      backgroundColor: palette,
+                                      textColor: Colors.white,
+                                      fontSize: 16.0,
+                                    );
+                                  },
                                 ),
                                 Spacer(),
                                 _cat.adoptive
                                     ? MaterialButton(
-                                        onPressed: () {},
+                                        onPressed: () {
+                                          showDialog(
+                                            context: context,
+                                            builder: (BuildContext context) =>
+                                                AlertDialog(
+                                              title:
+                                                  Text('Ďakujeme za záujem!'),
+                                              content: RichText(
+                                                text: TextSpan(
+                                                  text:
+                                                      'Ak si chcete túto mačku adoptovať, ozvite sa nám na telefónnom čísle:\n\n+421 920 123 456\n\nĎakujeme!',
+                                                  style: TextStyle(
+                                                    color: Colors.black,
+                                                    fontSize: 16,
+                                                  ),
+                                                ),
+                                              ),
+                                              actions: <Widget>[
+                                                FlatButton(
+                                                    onPressed: () =>
+                                                        Navigator.of(context)
+                                                            .pop(),
+                                                    child: Text('Ok'))
+                                              ],
+                                            ),
+                                          );
+                                        },
                                         child: Row(
                                           children: <Widget>[
                                             Icon(CatFont.cat),
