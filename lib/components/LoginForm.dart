@@ -50,7 +50,7 @@ class _LoginFormState extends State<LoginForm> {
           ),
           TextFormField(
             decoration: InputDecoration(
-              labelText: 'Password',
+              labelText: 'Heslo',
               enabled: _enabled,
             ),
             obscureText: true,

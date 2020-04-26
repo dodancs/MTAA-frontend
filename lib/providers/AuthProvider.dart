@@ -227,6 +227,39 @@ class AuthProvider with ChangeNotifier {
     }
   }
 
+  Future edit(String key, String value) async {
+    http.Response tmp;
+    try {
+      tmp = await http.put(
+        Uri.http(API_URL, '/auth/users/' + _current_user.uuid),
+        headers: {
+          'Authorization': _tokenType + ' ' + _token,
+          'Content-Type': 'application/json',
+        },
+        body: json.encode(
+          {
+            key: value,
+          },
+        ),
+      );
+    } catch (error) {
+      print(error);
+      return 'Nie je možné pripojiť sa na server';
+    }
+    var response;
+    if (tmp.statusCode == 200) {
+      await refreshUser();
+      return null;
+    } else {
+      try {
+        response = json.decode(tmp.body);
+      } catch (_) {
+        return 'Nastala serverová chyba';
+      }
+      return response['error'];
+    }
+  }
+
   Future<void> logout() async {
     _token = null;
     _tokenType = null;

@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:CiliCat/settings.dart';
 
-class AppTitleRefresh extends StatelessWidget with PreferredSizeWidget {
-  final Function _callback;
+class AppTitleSettings extends StatelessWidget with PreferredSizeWidget {
+  final Function _settings;
+  final Function _back;
 
-  AppTitleRefresh(this._callback);
+  AppTitleSettings(this._back, this._settings);
 
   @override
   Widget build(BuildContext context) {
@@ -16,10 +17,14 @@ class AppTitleRefresh extends StatelessWidget with PreferredSizeWidget {
             fontSize: 40.0,
           )),
       centerTitle: true,
+      leading: IconButton(
+        icon: Icon(Icons.arrow_back),
+        onPressed: _back,
+      ),
       actions: <Widget>[
         IconButton(
-          icon: Icon(Icons.refresh),
-          onPressed: this._callback,
+          icon: Icon(Icons.settings),
+          onPressed: _settings,
         ),
       ],
     );

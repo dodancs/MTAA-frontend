@@ -286,9 +286,9 @@ class _CatEditPageState extends State<CatEditPage> {
         changes.addAll({'health_status': widget._health_status.id});
       if (widget._castratedChanged)
         changes.addAll({'castrated': widget._castrated});
-      if (widget._vaccinated)
+      if (widget._vaccinatedChanged)
         changes.addAll({'vaccinated': widget._vaccinated});
-      if (widget._descriptionChanged)
+      if (widget._dewormedChanged)
         changes.addAll({'dewormed': widget._dewormed});
       if (widget._adoptiveChanged)
         changes.addAll({'adoptive': widget._adoptive});
@@ -395,15 +395,13 @@ class _CatEditPageState extends State<CatEditPage> {
       }),
     ];
 
-    FocusScope.of(context).requestFocus(new FocusNode());
-
     return WillPopScope(
       onWillPop: _backPressed,
-      child: Scaffold(
-        appBar: AppTitleBack(callback: _backPressed),
-        body: GestureDetector(
-          onTap: () => FocusScope.of(context).requestFocus(new FocusNode()),
-          child: Stack(
+      child: GestureDetector(
+        onTap: () => FocusScope.of(context).requestFocus(new FocusNode()),
+        child: Scaffold(
+          appBar: AppTitleBack(callback: _backPressed),
+          body: Stack(
             children: <Widget>[
               SingleChildScrollView(
                 child: Container(

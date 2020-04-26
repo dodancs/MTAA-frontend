@@ -1,9 +1,10 @@
-import 'package:CiliCat/components/AppTitleBack.dart';
+import 'package:CiliCat/components/AppTitleSettings.dart';
 import 'package:CiliCat/components/CatCard.dart';
 import 'package:CiliCat/components/Heading1.dart';
 import 'package:CiliCat/components/UserCard.dart';
 import 'package:CiliCat/providers/AuthProvider.dart';
 import 'package:CiliCat/providers/CatsProvider.dart';
+import 'package:CiliCat/screens/ProfileEditPage.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -20,10 +21,10 @@ class _ProfilePageState extends State<ProfilePage> {
   void _updateCats(
       final List<String> favourites, final CatsProvider catsProvider) async {
     if (!widget.updated) {
+      widget.updated = true;
       for (String f in favourites) {
         await catsProvider.updateCat(f);
       }
-      widget.updated = true;
       if (mounted) setState(() {});
     }
   }
@@ -41,10 +42,19 @@ class _ProfilePageState extends State<ProfilePage> {
         return Future.value(true);
       },
       child: Scaffold(
-        appBar: AppTitleBack(
-          callback: () async {
+        appBar: AppTitleSettings(
+          () async {
             await catsProvider.getCats();
             Navigator.of(context).pop();
+          },
+          () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) =>
+                    ProfileEditPage(authProvider.getCurrentUser),
+              ),
+            );
           },
         ),
         body: SingleChildScrollView(
