@@ -96,8 +96,8 @@ class _ShelterNeedsPageState extends State<ShelterNeedsPage> {
             trailing: authProvider.isAdmin
                 ? IconButton(
                     icon: Icon(
-                      n.hide ? Icons.remove_red_eye : CatFont.eye_off,
-                      color: palette[400],
+                      n.hide ? CatFont.eye_off : Icons.remove_red_eye,
+                      color: n.hide ? Colors.black38 : palette[600],
                     ),
                     onPressed: () async {
                       await Provider.of<ShelterneedsProvider>(context,

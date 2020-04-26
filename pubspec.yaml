@@ -1,7 +1,7 @@
 name: CiliCat
 description: A new Flutter project.
 
-version: 1.0.1+9
+version: 1.0.1+12
 
 environment:
   sdk: ">=2.3.0 <3.0.0"

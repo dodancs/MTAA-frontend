@@ -2,6 +2,7 @@ import 'package:CiliCat/cat_font_icons.dart';
 import 'package:CiliCat/components/MenuItem.dart';
 import 'package:CiliCat/components/UserMenuCard.dart';
 import 'package:CiliCat/providers/AuthProvider.dart';
+import 'package:CiliCat/screens/AdminPage.dart';
 import 'package:CiliCat/screens/HelpPage.dart';
 import 'package:CiliCat/screens/ProfilePage.dart';
 import 'package:CiliCat/screens/ShelterNeedsPage.dart';
@@ -61,6 +62,7 @@ class MainMenu extends StatelessWidget {
         title: 'Administrácia',
         callback: () {
           Navigator.pop(context);
+          Navigator.pushNamed(context, AdminPage.screenRoute);
         },
       ));
     }

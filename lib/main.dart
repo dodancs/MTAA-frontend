@@ -3,6 +3,7 @@ import 'package:CiliCat/providers/PicturesProvider.dart';
 import 'package:CiliCat/providers/SettingsProvider.dart';
 import 'package:CiliCat/providers/CatsProvider.dart';
 import 'package:CiliCat/providers/ShelterNeedsProvider.dart';
+import 'package:CiliCat/screens/AdminPage.dart';
 import 'package:CiliCat/screens/AuthPage.dart';
 import 'package:CiliCat/screens/HelpPage.dart';
 import 'package:CiliCat/screens/HomePage.dart';
@@ -65,6 +66,7 @@ class MyApp extends StatelessWidget {
               HelpPage.screenRoute: (context) => HelpPage(),
               ProfilePage.screenRoute: (context) => ProfilePage(),
               ShelterNeedsPage.screenRoute: (context) => ShelterNeedsPage(),
+              AdminPage.screenRoute: (context) => AdminPage(),
             },
           );
         },

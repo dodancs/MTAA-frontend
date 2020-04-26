@@ -71,6 +71,18 @@ class SettingsProvider with ChangeNotifier {
     return list;
   }
 
+  Future<void> refresh(String type) async {
+    if (type == 'breeds')
+      _breeds = List<Breed>.from(
+          await getSettings('breeds', (id, name) => Breed(id: id, name: name)));
+    if (type == 'colours')
+      _colours = List<Colour>.from(await getSettings(
+          'colours', (id, name) => Colour(id: id, name: name)));
+    if (type == 'health_statuses')
+      _healthStatuses = List<HealthStatus>.from(await getSettings(
+          'health_statuses', (id, name) => HealthStatus(id: id, name: name)));
+  }
+
   Future addSetting(String type, String name) async {
     http.Response tmp;
     try {
@@ -110,6 +122,26 @@ class SettingsProvider with ChangeNotifier {
     }
 
     return response['error'];
+  }
+
+  Future<void> deleteSetting(String type, int id) async {
+    try {
+      await http.delete(
+          Uri.http(
+            API_URL,
+            '/settings/' + type + '/' + id.toString(),
+          ),
+          headers: {
+            'Authorization': _auth.getTokenType + ' ' + _auth.getToken,
+          });
+    } catch (error) {
+      print(error);
+      return;
+    }
+
+    await refresh(type);
+
+    notifyListeners();
   }
 
   Breed breedFrom({final int id, final String name}) {
@@ -165,12 +197,11 @@ class SettingsProvider with ChangeNotifier {
       return;
     }
     _auth = auth;
-    _breeds = List<Breed>.from(
-        await getSettings('breeds', (id, name) => Breed(id: id, name: name)));
-    _colours = List<Colour>.from(
-        await getSettings('colours', (id, name) => Colour(id: id, name: name)));
-    _healthStatuses = List<HealthStatus>.from(await getSettings(
-        'health_statuses', (id, name) => HealthStatus(id: id, name: name)));
+
+    await refresh('breeds');
+    await refresh('colours');
+    await refresh('health_statuses');
+
     notifyListeners();
   }
 }
