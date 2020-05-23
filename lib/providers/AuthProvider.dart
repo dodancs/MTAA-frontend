@@ -58,6 +58,30 @@ class AuthProvider with ChangeNotifier {
   }
 
   Future getUser(String uuid) async {
+    if (_storage.connectivity == ConnectivityResult.none) {
+      dynamic data = await _storage.get('user');
+      if (data == null)
+        return [
+          false,
+          {'error': 'Nebolo možné načítať informácie o požívateľovi'},
+        ];
+      _admin = data['admin'];
+      _current_user = User(
+        uuid: data['uuid'],
+        email: data['email'],
+        firstname: data['firstname'],
+        lastname: data['lastname'],
+        activated: data['activated'],
+        admin: data['admin'],
+        donations: data['donations'].toDouble(),
+        picture: data['picture'],
+        favourites: List<String>.from(data['favourites']),
+        created_at: DateTime.parse(data['created_at']),
+        updated_at: DateTime.parse(data['updated_at']),
+      );
+      return [true];
+    }
+
     http.Response tmp;
     try {
       tmp = await http.get(
@@ -85,6 +109,19 @@ class AuthProvider with ChangeNotifier {
     }
     if (tmp.statusCode == 200) {
       _admin = response['admin'];
+      await _storage.set('user', {
+        'uuid': response['uuid'],
+        'email': response['email'],
+        'firstname': response['firstname'],
+        'lastname': response['lastname'],
+        'activated': response['activated'],
+        'admin': response['admin'],
+        'donations': response['donations'].toDouble(),
+        'picture': response['picture'],
+        'favourites': List<String>.from(response['favourites']),
+        'created_at': response['created_at'],
+        'updated_at': response['updated_at'],
+      });
       _current_user = User(
         uuid: response['uuid'],
         email: response['email'],

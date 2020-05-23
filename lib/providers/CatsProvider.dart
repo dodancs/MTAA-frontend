@@ -422,6 +422,28 @@ class CatsProvider with ChangeNotifier {
   }
 
   Future<void> like(Cat cat, bool liked) async {
+    if (_storage.connectivity == ConnectivityResult.none) {
+      await _storage.addSync([
+        {
+          'method': 'post',
+          'endpoint': '/cats/' + cat.uuid + '/' + (liked ? 'unlike' : 'like'),
+          'headers': {},
+          'data': {},
+        }
+      ]);
+      dynamic user = await _storage.get('user');
+      if (user != null) {
+        if (liked)
+          user['favourites'].removeWhere((e) => e == cat.uuid);
+        else
+          user['favourites'].add(cat.uuid);
+      }
+      await _storage.set('user', user);
+      await _auth.refreshUser();
+      notifyListeners();
+      return;
+    }
+
     String request = '/cats/' + cat.uuid + '/';
     if (liked) {
       request += 'unlike';
