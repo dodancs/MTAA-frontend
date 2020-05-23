@@ -1,12 +1,16 @@
 import 'dart:convert';
 
+import 'package:CiliCat/providers/StorageProvider.dart';
 import 'package:CiliCat/settings.dart';
 import 'package:CiliCat/models/ShelterNeed.dart';
+import 'package:connectivity/connectivity.dart';
 import 'package:http/http.dart' as http;
 import 'package:CiliCat/providers/AuthProvider.dart';
 import 'package:flutter/material.dart';
+import 'package:uuid/uuid.dart';
 
 class ShelterneedsProvider with ChangeNotifier {
+  StorageProvider _storage;
   AuthProvider _auth;
 
   List<ShelterNeed> _needs;
@@ -20,6 +24,24 @@ class ShelterneedsProvider with ChangeNotifier {
 
   Future getNeeds() async {
     _needs = List<ShelterNeed>();
+
+    Map<String, dynamic> needs = await _storage.get('needs');
+
+    if (_storage.connectivity == ConnectivityResult.none) {
+      if (needs != null) {
+        for (var n in needs['needs']) {
+          _needs.add(ShelterNeed(
+            uuid: n['uuid'],
+            name: n['name'],
+            category: n['category'],
+            details: n['details'],
+            hide: n['hide'],
+          ));
+        }
+      }
+      notifyListeners();
+      return;
+    }
 
     http.Response tmp;
     try {
@@ -48,6 +70,10 @@ class ShelterneedsProvider with ChangeNotifier {
     }
 
     if (tmp.statusCode == 200 && response['shelterneeds'] != null) {
+      if (needs == null) needs = {};
+      needs['needs'] = response['shelterneeds'];
+      await _storage.set('needs', needs);
+
       for (dynamic need in response['shelterneeds']) {
         _needs.add(
           ShelterNeed(
@@ -65,6 +91,35 @@ class ShelterneedsProvider with ChangeNotifier {
   }
 
   Future toggle(String uuid) async {
+    if (_storage.connectivity == ConnectivityResult.none) {
+      if (await _storage.hasSync((item) =>
+          item['method'] == 'post' &&
+          item['endpoint'] == '/shelterneeds/' + uuid)) {
+        await _storage.removeSync((item) =>
+            item['method'] == 'post' &&
+            item['endpoint'] == '/shelterneeds/' + uuid);
+      } else {
+        await _storage.addSync([
+          {
+            'method': 'post',
+            'endpoint': '/shelterneeds/' + uuid,
+            'headers': {},
+            'data': {},
+          }
+        ]);
+      }
+      dynamic needs = await _storage.get('needs');
+      for (dynamic n in needs['needs']) {
+        if (n['uuid'] == uuid) {
+          n['hide'] = !n['hide'];
+          break;
+        }
+      }
+      await _storage.set('needs', needs);
+      await getNeeds();
+      return;
+    }
+
     try {
       await http.post(
         Uri.http(
@@ -84,6 +139,37 @@ class ShelterneedsProvider with ChangeNotifier {
   }
 
   Future add(String name, String category, String details) async {
+    if (_storage.connectivity == ConnectivityResult.none) {
+      String uuid = Uuid().v4();
+      await _storage.addSync([
+        {
+          'method': 'post',
+          'endpoint': '/shelterneeds',
+          'headers': {
+            'Content-Type': 'application/json',
+          },
+          'data': {
+            'name': name,
+            'category': category,
+            'details': details,
+            'uuid': uuid,
+          },
+        },
+      ]);
+
+      dynamic needs = await _storage.get('needs');
+      needs['needs'].add({
+        'name': name,
+        'category': category,
+        'details': details,
+        'uuid': uuid,
+        'hide': false,
+      });
+      await _storage.set('needs', needs);
+      await getNeeds();
+      return null;
+    }
+
     http.Response tmp;
     try {
       tmp = await http.post(
@@ -118,10 +204,41 @@ class ShelterneedsProvider with ChangeNotifier {
 
     await getNeeds();
 
-    return null;
+    return;
   }
 
   Future delete(String uuid) async {
+    if (_storage.connectivity == ConnectivityResult.none) {
+      if (await _storage.hasSync((item) =>
+          item['method'] == 'post' &&
+          item['endpoint'] == '/shelterneeds' &&
+          item['data']['uuid'] == uuid)) {
+        await _storage.removeSync((item) =>
+            item['method'] == 'post' &&
+            item['endpoint'] == '/shelterneeds' &&
+            item['data']['uuid'] == uuid);
+      } else {
+        if (!await _storage.hasSync((e) =>
+            e['method'] == 'delete' &&
+            e['endpoint'] == '/shelterneeds/' + uuid)) {
+          await _storage.addSync([
+            {
+              'method': 'delete',
+              'endpoint': '/shelterneeds/' + uuid,
+              'headers': {},
+              'data': {},
+            },
+          ]);
+        }
+      }
+
+      dynamic needs = await _storage.get('needs');
+      needs['needs'].removeWhere((e) => e['uuid'] == uuid);
+      await _storage.set('needs', needs);
+      await getNeeds();
+      return;
+    }
+
     http.Response tmp;
     try {
       tmp = await http.delete(
@@ -153,7 +270,8 @@ class ShelterneedsProvider with ChangeNotifier {
     return null;
   }
 
-  void update(AuthProvider auth) async {
+  void update(StorageProvider storage, AuthProvider auth) async {
+    _storage = storage;
     if (!auth.isLoggedIn) {
       return;
     }
