@@ -78,7 +78,7 @@ class MainMenu extends StatelessWidget {
       icon: Icons.exit_to_app,
       title: 'Odhlásiť sa',
       callback: () {
-        Provider.of<AuthProvider>(context, listen: false).logout();
+        authProvider.logout();
       },
     ));
     return items;

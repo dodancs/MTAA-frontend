@@ -1,3 +1,4 @@
+import 'package:CiliCat/providers/StorageProvider.dart';
 import 'package:CiliCat/providers/AuthProvider.dart';
 import 'package:CiliCat/providers/PicturesProvider.dart';
 import 'package:CiliCat/providers/SettingsProvider.dart';
@@ -10,6 +11,7 @@ import 'package:CiliCat/screens/HomePage.dart';
 import 'package:CiliCat/screens/ProfilePage.dart';
 import 'package:CiliCat/screens/ShelterNeedsPage.dart';
 import 'package:CiliCat/screens/SplashScreen.dart';
+import 'package:CiliCat/screens/SyncPage.dart';
 import 'package:CiliCat/settings.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -22,39 +24,47 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
-        ChangeNotifierProvider<AuthProvider>(
-          create: (_) => AuthProvider(),
+        ChangeNotifierProvider<StorageProvider>(
+          create: (_) => StorageProvider(),
         ),
-        ChangeNotifierProxyProvider<AuthProvider, SettingsProvider>(
+        ChangeNotifierProxyProvider<StorageProvider, AuthProvider>(
+          create: (_) => AuthProvider(),
+          update: (_, storage, auth) => auth..update(storage),
+        ),
+        ChangeNotifierProxyProvider2<StorageProvider, AuthProvider,
+            SettingsProvider>(
           create: (_) => SettingsProvider(),
-          update: (_, auth, settings) => settings..update(auth),
+          update: (_, storage, auth, settings) =>
+              settings..update(storage, auth),
         ),
         ChangeNotifierProxyProvider<AuthProvider, PicturesProvider>(
           create: (_) => PicturesProvider(),
           update: (_, auth, pictures) => pictures..update(auth),
         ),
-        ChangeNotifierProxyProvider<AuthProvider, ShelterneedsProvider>(
+        ChangeNotifierProxyProvider2<StorageProvider, AuthProvider,
+            ShelterneedsProvider>(
           create: (_) => ShelterneedsProvider(),
-          update: (_, auth, needs) => needs..update(auth),
+          update: (_, storage, auth, needs) => needs..update(storage, auth),
         ),
-        ChangeNotifierProxyProvider2<AuthProvider, SettingsProvider,
-            CatsProvider>(
+        ChangeNotifierProxyProvider3<StorageProvider, AuthProvider,
+            SettingsProvider, CatsProvider>(
           create: (_) => CatsProvider(),
-          update: (_, auth, settings, cats) => cats..update(auth, settings),
+          update: (_, storage, auth, settings, cats) =>
+              cats..update(storage, auth, settings),
         ),
       ],
-      child: Consumer<AuthProvider>(
-        builder: (context, auth, _) {
+      child: Consumer2<StorageProvider, AuthProvider>(
+        builder: (context, storage, auth, _) {
           return MaterialApp(
             debugShowCheckedModeBanner: false,
             title: APP_TITLE,
             theme: ThemeData(
                 primarySwatch: palette,
                 textTheme: TextTheme(
-                  body1: TextStyle(fontSize: 16),
+                  bodyText1: TextStyle(fontSize: 16),
                 )),
             home: auth.isLoggedIn
-                ? HomePage()
+                ? storage.needSync ? SyncPage() : HomePage()
                 : FutureBuilder(
                     future: auth.tryAutoLogin(),
                     builder: (context, result) =>

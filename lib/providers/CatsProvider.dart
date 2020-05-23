@@ -1,6 +1,8 @@
 import 'dart:convert';
 
 import 'package:CiliCat/providers/SettingsProvider.dart';
+import 'package:CiliCat/providers/StorageProvider.dart';
+import 'package:connectivity/connectivity.dart';
 import 'package:http/http.dart' as http;
 import 'package:CiliCat/models/Cat.dart';
 import 'package:CiliCat/providers/AuthProvider.dart';
@@ -8,6 +10,7 @@ import 'package:CiliCat/settings.dart';
 import 'package:flutter/material.dart';
 
 class CatsProvider with ChangeNotifier {
+  StorageProvider _storage;
   AuthProvider _auth;
   SettingsProvider _settings;
   List<Cat> _cats;
@@ -98,7 +101,35 @@ class CatsProvider with ChangeNotifier {
 
   Future getCats() async {
     _page = 1;
-    _cats = List<Cat>();
+    _cats = [];
+
+    Map<String, dynamic> cats = await _storage.get('cats');
+
+    if (_storage.connectivity == ConnectivityResult.none) {
+      if (cats != null) {
+        for (var c in cats['data']) {
+          _cats.add(Cat(
+            uuid: c['uuid'],
+            name: c['name'],
+            age: c['age'],
+            sex: c['sex'],
+            description: c['description'],
+            adoptive: c['adoptive'],
+            pictures: List<String>.from(c['pictures']),
+            commentsNum: c['comments'],
+            breed: _settings.breedFrom(id: c['breed']),
+            colour: _settings.colourFrom(id: c['colour']),
+            health_status: _settings.healthStatusFrom(id: c['health_status']),
+            castrated: c['castrated'],
+            vaccinated: c['vaccinated'],
+            dewormed: c['dewormed'],
+            health_log: c['health_log'],
+          ));
+        }
+      }
+      notifyListeners();
+      return null;
+    }
 
     http.Response tmp;
     try {
@@ -128,6 +159,8 @@ class CatsProvider with ChangeNotifier {
     }
 
     if (tmp.statusCode == 200 && response['cats'] != null) {
+      await _storage.set('cats', {'data': response['cats']});
+
       for (dynamic cat in response['cats']) {
         _cats.add(
           Cat(
@@ -155,6 +188,11 @@ class CatsProvider with ChangeNotifier {
 
   Future<bool> moreCats() async {
     int newPage = _page + 1;
+
+    if (_storage.connectivity == ConnectivityResult.none) {
+      notifyListeners();
+      return false;
+    }
 
     http.Response tmp;
     try {
@@ -185,6 +223,12 @@ class CatsProvider with ChangeNotifier {
     if (tmp.statusCode == 200 &&
         response['cats'] != null &&
         (response['cats'] as List).length > 0) {
+      Map<String, dynamic> cats = await _storage.get('cats');
+
+      cats['data'] = [...List.from(cats['data']), ...response['cats']];
+
+      await _storage.set('cats', cats);
+
       for (dynamic cat in response['cats']) {
         _cats.add(
           Cat(
@@ -431,7 +475,9 @@ class CatsProvider with ChangeNotifier {
     return await updateCat(uuid);
   }
 
-  void update(AuthProvider auth, SettingsProvider settings) async {
+  void update(StorageProvider storage, AuthProvider auth,
+      SettingsProvider settings) async {
+    _storage = storage;
     if (!auth.isLoggedIn) {
       return;
     }

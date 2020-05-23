@@ -1,14 +1,16 @@
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:CiliCat/providers/StorageProvider.dart';
 import 'package:CiliCat/models/User.dart';
 import 'package:connectivity/connectivity.dart';
 import 'package:http/http.dart' as http;
 import 'package:CiliCat/settings.dart';
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 class AuthProvider with ChangeNotifier {
+  StorageProvider _storage;
+
   String _token;
   String _tokenType;
   DateTime _expires;
@@ -120,15 +122,14 @@ class AuthProvider with ChangeNotifier {
     _admin = _current_user.admin;
     _loggedIn = true;
 
-    final preferences = await SharedPreferences.getInstance();
-    await preferences.setString(
+    await _storage.set(
       'auth',
-      json.encode({
+      {
         'token': _token,
         'tokenType': _tokenType,
         'expires': _expires.toIso8601String(),
         ..._current_user.toJson(),
-      }),
+      },
     );
 
     return [true];
@@ -284,24 +285,23 @@ class AuthProvider with ChangeNotifier {
       print(error);
     }
 
-    final preferences = await SharedPreferences.getInstance();
-    await preferences.setString('auth', null);
+    await _storage.delete('auth');
     notifyListeners();
   }
 
   Future<bool> tryAutoLogin() async {
-    final preferences = await SharedPreferences.getInstance();
-    if (!preferences.containsKey('auth')) {
+    dynamic data = await _storage.get('auth');
+    if (data == null) {
       return false;
     }
-    final data = json.decode(preferences.getString('auth'));
+
     if (DateTime.parse(data['expires']).isBefore(DateTime.now())) {
       return false;
     }
 
     // If not connected to internet, use local data, else reload user data from internet
-    var connectivityResult = await (Connectivity().checkConnectivity());
-    if (connectivityResult == ConnectivityResult.none) {
+    // var connectivityResult = await (Connectivity().checkConnectivity());
+    if (_storage.connectivity == ConnectivityResult.none) {
       _token = data['token'];
       _tokenType = data['tokenType'];
       _expires = DateTime.parse(data['expires']);
@@ -312,7 +312,7 @@ class AuthProvider with ChangeNotifier {
       var res = await loginWith(
         data['tokenType'],
         data['token'],
-        5,
+        10,
         User.fromJson(data).uuid,
       );
 
@@ -367,5 +367,10 @@ class AuthProvider with ChangeNotifier {
 
   Future<void> refreshUser() async {
     await getUser(_uuid);
+  }
+
+  void update(StorageProvider storage) async {
+    _storage = storage;
+    notifyListeners();
   }
 }

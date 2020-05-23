@@ -3,12 +3,15 @@ import 'dart:convert';
 import 'package:CiliCat/models/Breed.dart';
 import 'package:CiliCat/models/Colour.dart';
 import 'package:CiliCat/models/HealthStatus.dart';
+import 'package:CiliCat/providers/StorageProvider.dart';
+import 'package:connectivity/connectivity.dart';
 import 'package:http/http.dart' as http;
 import 'package:CiliCat/providers/AuthProvider.dart';
 import 'package:CiliCat/settings.dart';
 import 'package:flutter/material.dart';
 
 class SettingsProvider with ChangeNotifier {
+  StorageProvider _storage;
   AuthProvider _auth;
   List<Breed> _breeds;
   List<Colour> _colours;
@@ -37,7 +40,18 @@ class SettingsProvider with ChangeNotifier {
 
   Future<List> getSettings(
       String type, Function(int id, String name) object) async {
-    List list = List();
+    List list = [];
+
+    Map<String, dynamic> settings = await _storage.get('settings');
+
+    if (_storage.connectivity == ConnectivityResult.none) {
+      if (settings != null) {
+        for (var s in settings[type]) {
+          list.add(object(s['id'], s['name']));
+        }
+      }
+      return list;
+    }
 
     http.Response tmp;
     try {
@@ -52,7 +66,7 @@ class SettingsProvider with ChangeNotifier {
       );
     } catch (error) {
       print(error);
-      return null;
+      return list;
     }
 
     var response;
@@ -63,6 +77,11 @@ class SettingsProvider with ChangeNotifier {
     }
 
     if (tmp.statusCode == 200 && response[type] != null) {
+      // fetch and store new settings
+      if (settings == null) settings = {};
+      settings[type] = response[type];
+      await _storage.set('settings', settings);
+
       for (dynamic item in response[type]) {
         list.add(object(item['id'], item['name']));
       }
@@ -83,7 +102,47 @@ class SettingsProvider with ChangeNotifier {
           'health_statuses', (id, name) => HealthStatus(id: id, name: name)));
   }
 
-  Future addSetting(String type, String name) async {
+  Future<dynamic> addSetting(String type, String name) async {
+    if (_storage.connectivity == ConnectivityResult.none) {
+      List l;
+      if (type == 'breeds') l = _breeds;
+      if (type == 'colours') l = _colours;
+      if (type == 'health_statuses') l = _healthStatuses;
+
+      int maxID = 0;
+      for (dynamic i in l) {
+        if (i.id > maxID) maxID = i.id;
+        if (i.name == name) {
+          if (type == 'breeds') return 'Dané plemeno už existuje!';
+          if (type == 'colours') return 'Daná farba už existuje!';
+          if (type == 'health_statuses')
+            return 'Daný zdravotný stav už existuje!';
+        }
+      }
+
+      await _storage.addSync([
+        {
+          'method': 'post',
+          'endpoint': '/settings/' + type,
+          'headers': {
+            'Content-Type': 'application/json',
+          },
+          'data': {'name': name},
+        },
+      ]);
+
+      dynamic settings = await _storage.get('settings');
+      settings[type] = [
+        ...List.from(settings[type]),
+        {'id': maxID + 1, 'name': name}
+      ];
+      await _storage.set('settings', settings);
+
+      await refresh(type);
+      notifyListeners();
+      return null;
+    }
+
     http.Response tmp;
     try {
       tmp = await http.post(
@@ -111,12 +170,13 @@ class SettingsProvider with ChangeNotifier {
     }
 
     if (tmp.statusCode == 200 && response['id'] != null) {
-      if (type == 'breeds') _breeds.add(Breed(id: response['id'], name: name));
-      if (type == 'colours')
-        _colours.add(Colour(id: response['id'], name: name));
-      if (type == 'health_statuses')
-        _healthStatuses.add(HealthStatus(id: response['id'], name: name));
-
+      dynamic settings = await _storage.get('settings');
+      settings[type] = [
+        ...List.from(settings[type]),
+        {'id': response['id'], 'name': name}
+      ];
+      await _storage.set('settings', settings);
+      await refresh(type);
       notifyListeners();
       return null;
     }
@@ -125,6 +185,47 @@ class SettingsProvider with ChangeNotifier {
   }
 
   Future<void> deleteSetting(String type, int id) async {
+    if (_storage.connectivity == ConnectivityResult.none) {
+      String converted = type == 'breeds'
+          ? breedFrom(id: id).name
+          : type == 'colours'
+              ? colourFrom(id: id).name
+              : healthStatusFrom(id: id).name;
+
+      if (await _storage.hasSync((item) {
+        return item['method'] == 'post' &&
+            item['endpoint'] == ('/settings/' + type) &&
+            item['data']['name'] == converted;
+      })) {
+        await _storage.removeSync((item) {
+          return item['method'] == 'post' &&
+              item['endpoint'] == ('/settings/' + type) &&
+              item['data']['name'] == converted;
+        });
+      } else {
+        if (!await _storage.hasSync((e) =>
+            e['method'] == 'delete' &&
+            e['endpoint'] == '/settings/' + type + '/' + id.toString())) {
+          await _storage.addSync([
+            {
+              'method': 'delete',
+              'endpoint': '/settings/' + type + '/' + id.toString(),
+              'headers': {},
+              'data': {},
+            },
+          ]);
+        }
+      }
+
+      dynamic settings = await _storage.get('settings');
+      settings[type].removeWhere((e) => e['id'] == id);
+      await _storage.set('settings', settings);
+
+      await refresh(type);
+      notifyListeners();
+      return;
+    }
+
     try {
       await http.delete(
           Uri.http(
@@ -192,7 +293,8 @@ class SettingsProvider with ChangeNotifier {
     return null;
   }
 
-  void update(AuthProvider auth) async {
+  void update(StorageProvider storage, AuthProvider auth) async {
+    _storage = storage;
     if (!auth.isLoggedIn) {
       return;
     }

@@ -52,7 +52,7 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
-  Future<Null> _refresh() async {
+  Future<void> _refresh() async {
     _refreshKey.currentState?.show(atTop: false);
     await Provider.of<CatsProvider>(context, listen: false).getCats();
     setState(() {
