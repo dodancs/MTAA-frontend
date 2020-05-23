@@ -23,7 +23,7 @@ class StorageProvider with ChangeNotifier {
     _preferences = JsonStore();
     Connectivity().onConnectivityChanged.listen(_connectionChanged);
     connectivity = await Connectivity().checkConnectivity();
-    updateNeedSync();
+    await updateNeedSync();
     notifyListeners();
   }
 
@@ -37,7 +37,7 @@ class StorageProvider with ChangeNotifier {
 
   Future<void> _connectionChanged(ConnectivityResult result) async {
     connectivity = result;
-    updateNeedSync();
+    await updateNeedSync();
     notifyListeners();
   }
 

@@ -1,3 +1,4 @@
+import 'package:CiliCat/components/ConfirmDialog.dart';
 import 'package:CiliCat/providers/AuthProvider.dart';
 import 'package:CiliCat/providers/StorageProvider.dart';
 import 'package:CiliCat/settings.dart';
@@ -69,6 +70,36 @@ class _SyncPageState extends State<SyncPage> {
                     Text(_syncItem == null
                         ? ''
                         : _error == null ? _syncItem : _error),
+                    SizedBox(height: 40),
+                    _error == null
+                        ? Container()
+                        : ButtonBar(
+                            alignment: MainAxisAlignment.center,
+                            children: <Widget>[
+                              MaterialButton(
+                                onPressed: () async {
+                                  bool r = await showDialog(
+                                    context: context,
+                                    builder: (BuildContext context) =>
+                                        ConfirmDialog(
+                                            'Zmeny neboli uložené!\nNaozaj si prajete zrušiť synchronizáciu?'),
+                                  );
+                                  if (r) {
+                                    await Provider.of<StorageProvider>(context,
+                                            listen: false)
+                                        .removeSync((_) => true, notify: true);
+                                  }
+                                },
+                                child: Text('Zrušiť'),
+                                color: palette[600],
+                              ),
+                              MaterialButton(
+                                onPressed: () => _doSync(context),
+                                child: Text('Skúsiť znova'),
+                                color: palette,
+                              ),
+                            ],
+                          )
                   ]
                 : [
                     Padding(
@@ -86,10 +117,18 @@ class _SyncPageState extends State<SyncPage> {
                       alignment: MainAxisAlignment.center,
                       children: <Widget>[
                         MaterialButton(
-                          onPressed: () async =>
+                          onPressed: () async {
+                            bool r = await showDialog(
+                              context: context,
+                              builder: (BuildContext context) => ConfirmDialog(
+                                  'Zmeny neboli uložené!\nNaozaj si prajete zrušiť synchronizáciu?'),
+                            );
+                            if (r) {
                               await Provider.of<StorageProvider>(context,
                                       listen: false)
-                                  .removeSync((_) => true, notify: true),
+                                  .removeSync((_) => true, notify: true);
+                            }
+                          },
                           child: Text('Nie'),
                           color: palette[600],
                         ),
