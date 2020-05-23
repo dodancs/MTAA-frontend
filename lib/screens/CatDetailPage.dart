@@ -37,7 +37,6 @@ class _CatDetailPageState extends State<CatDetailPage> {
 
   @override
   Widget build(BuildContext context) {
-    final storageProvider = Provider.of<StorageProvider>(context);
     final catsProvider = Provider.of<CatsProvider>(context);
     final authProvider = Provider.of<AuthProvider>(context);
 
@@ -264,7 +263,7 @@ class _CatDetailPageState extends State<CatDetailPage> {
                     RichText(
                       text: TextSpan(
                         text: _cat.description,
-                        style: Theme.of(context).textTheme.body1,
+                        style: Theme.of(context).textTheme.bodyText1,
                       ),
                       softWrap: true,
                       overflow: TextOverflow.fade,
@@ -284,7 +283,7 @@ class _CatDetailPageState extends State<CatDetailPage> {
                           RichText(
                             text: TextSpan(
                               text: _cat.health_log,
-                              style: Theme.of(context).textTheme.body1,
+                              style: Theme.of(context).textTheme.bodyText1,
                             ),
                             softWrap: true,
                             overflow: TextOverflow.fade,
@@ -317,14 +316,6 @@ class _CatDetailPageState extends State<CatDetailPage> {
         floatingActionButton: authProvider.isAdmin
             ? FloatingActionButton(
                 onPressed: () {
-                  if (storageProvider.connectivity == ConnectivityResult.none) {
-                    showDialog(
-                      context: context,
-                      builder: (BuildContext context) => OkDialog(
-                          'Táto funkcionalita nie je podporovaná v režime offline!'),
-                    );
-                    return;
-                  }
                   Navigator.push(
                     context,
                     MaterialPageRoute(

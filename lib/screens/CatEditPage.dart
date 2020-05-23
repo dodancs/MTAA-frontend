@@ -16,8 +16,10 @@ import 'package:CiliCat/models/HealthStatus.dart';
 import 'package:CiliCat/providers/CatsProvider.dart';
 import 'package:CiliCat/providers/PicturesProvider.dart';
 import 'package:CiliCat/providers/SettingsProvider.dart';
+import 'package:CiliCat/providers/StorageProvider.dart';
 import 'package:CiliCat/screens/CatDetailPage.dart';
 import 'package:CiliCat/settings.dart';
+import 'package:connectivity/connectivity.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -199,6 +201,7 @@ class _CatEditPageState extends State<CatEditPage> {
   void _deleteCat() async {
     setState(() {
       _enabled = false;
+      _loading = true;
     });
 
     String ret = await Provider.of<CatsProvider>(context, listen: false)
@@ -219,6 +222,7 @@ class _CatEditPageState extends State<CatEditPage> {
   void _submit() async {
     setState(() {
       _enabled = false;
+      _loading = true;
       widget.isValidated = true;
     });
     if (!_form.currentState.validate() ||
@@ -230,6 +234,7 @@ class _CatEditPageState extends State<CatEditPage> {
         widget._health_status == null) {
       setState(() {
         _enabled = true;
+        _loading = false;
       });
       return;
     }
@@ -252,6 +257,7 @@ class _CatEditPageState extends State<CatEditPage> {
         adoptive: widget._adoptive,
         pictures: widget._pictures,
         commentsNum: 0,
+        offline: false,
       ));
 
       if (ret[0]) {
@@ -314,6 +320,7 @@ class _CatEditPageState extends State<CatEditPage> {
 
     setState(() {
       _enabled = true;
+      _loading = false;
     });
   }
 
@@ -333,6 +340,7 @@ class _CatEditPageState extends State<CatEditPage> {
   final FocusNode _descriptionFocus = FocusNode();
   final FocusNode _healthLogFocus = FocusNode();
 
+  bool _loading = false;
   bool _enabled = true;
   bool _unsaved = false;
 
@@ -367,7 +375,7 @@ class _CatEditPageState extends State<CatEditPage> {
             style: TextStyle(fontSize: 20),
           ),
           color: palette,
-          onPressed: _submit,
+          onPressed: () => _loading || !_enabled ? null : _submit(),
         )
       ],
     );
@@ -375,7 +383,16 @@ class _CatEditPageState extends State<CatEditPage> {
 
   @override
   Widget build(BuildContext context) {
+    final StorageProvider storageProvider =
+        Provider.of<StorageProvider>(context);
     final settingsProvider = Provider.of<SettingsProvider>(context);
+
+    if (storageProvider.connectivity == ConnectivityResult.none &&
+        widget.cat != null &&
+        widget.cat.offline == false) {
+      _enabled = false;
+      _loading = false;
+    }
 
     List<String> _breeds = [
       ...settingsProvider.breeds.map((Breed b) {
@@ -414,7 +431,11 @@ class _CatEditPageState extends State<CatEditPage> {
                         Heading1(widget.cat == null
                             ? 'Pridanie mačky'
                             : 'Upravenie mačky'),
-                        PictureListInput(widget._pictures, _picturesChanged),
+                        PictureListInput(
+                          widget._pictures,
+                          _picturesChanged,
+                          enabled: _enabled,
+                        ),
                         ErrorMessage(
                             'Mačka musí mať obrázok!',
                             widget.isValidated &&
@@ -674,7 +695,7 @@ class _CatEditPageState extends State<CatEditPage> {
                   ),
                 ),
               ),
-              !_enabled ? Loading() : Container(),
+              _loading ? Loading() : Container(),
             ],
           ),
         ),

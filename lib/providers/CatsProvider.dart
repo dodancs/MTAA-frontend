@@ -124,6 +124,7 @@ class CatsProvider with ChangeNotifier {
             vaccinated: c['vaccinated'],
             dewormed: c['dewormed'],
             health_log: c['health_log'],
+            offline: c['offline'],
           ));
         }
       }
@@ -159,7 +160,11 @@ class CatsProvider with ChangeNotifier {
     }
 
     if (tmp.statusCode == 200 && response['cats'] != null) {
-      await _storage.set('cats', {'data': response['cats']});
+      List data = [];
+      for (dynamic c in response['cats']) {
+        data.add(c..addAll({'offline': false}));
+      }
+      await _storage.set('cats', {'data': data});
 
       for (dynamic cat in response['cats']) {
         _cats.add(
@@ -179,6 +184,7 @@ class CatsProvider with ChangeNotifier {
             vaccinated: cat['vaccinated'],
             dewormed: cat['dewormed'],
             health_log: cat['health_log'],
+            offline: false,
           ),
         );
       }
@@ -224,8 +230,12 @@ class CatsProvider with ChangeNotifier {
         response['cats'] != null &&
         (response['cats'] as List).length > 0) {
       Map<String, dynamic> cats = await _storage.get('cats');
+      List data = [];
+      for (dynamic c in response['cats']) {
+        data.add(c..addAll({'offline': false}));
+      }
 
-      cats['data'] = [...List.from(cats['data']), ...response['cats']];
+      cats['data'] = [...List.from(cats['data']), ...data];
 
       await _storage.set('cats', cats);
 
@@ -247,6 +257,7 @@ class CatsProvider with ChangeNotifier {
             vaccinated: cat['vaccinated'],
             dewormed: cat['dewormed'],
             health_log: cat['health_log'],
+            offline: false,
           ),
         );
       }
@@ -301,6 +312,7 @@ class CatsProvider with ChangeNotifier {
         vaccinated: response['vaccinated'],
         dewormed: response['dewormed'],
         health_log: response['health_log'],
+        offline: false,
       );
 
       // remove old cat
@@ -323,6 +335,41 @@ class CatsProvider with ChangeNotifier {
   }
 
   Future delete(String uuid) async {
+    if (_storage.connectivity == ConnectivityResult.none) {
+      Cat c = _cats.firstWhere((e) => e.uuid == uuid);
+      if (c == null || c.offline == true) {
+        if (await _storage.hasSync((item) =>
+            item['method'] == 'post' &&
+            item['endpoint'] == '/cats' &&
+            item['uuid'] == uuid)) {
+          await _storage.removeSync((item) =>
+              item['method'] == 'post' &&
+              item['endpoint'] == '/cats' &&
+              item['uuid'] == uuid);
+        }
+      } else {
+        if (!await _storage.hasSync((item) =>
+            item['method'] == 'delete' &&
+            item['endpoint'] == ('/cats/' + uuid))) {
+          await _storage.addSync([
+            {
+              'method': 'delete',
+              'endpoint': '/cats/' + uuid,
+              'headers': {},
+              'data': {},
+            }
+          ]);
+        }
+      }
+      dynamic cats = await _storage.get('cats');
+      if (cats != null) {
+        cats['data'].removeWhere((e) => e['uuid'] == uuid);
+      }
+      await _storage.set('cats', cats);
+      await getCats();
+      return;
+    }
+
     http.Response tmp;
     try {
       tmp = await http.delete(
@@ -404,6 +451,27 @@ class CatsProvider with ChangeNotifier {
     if (tmp.statusCode == 200 && response['uuid'] != null) {
       cat.uuid = response['uuid'];
       _cats.add(cat);
+
+      dynamic cats = await _storage.get('cats');
+      cats['data'].add({
+        'uuid': response['uuid'],
+        'name': cat.name,
+        'age': cat.age,
+        'sex': cat.sex,
+        'description': cat.description,
+        'adoptive': cat.adoptive,
+        'pictures': cat.pictures,
+        'breed': cat.breed.id,
+        'colour': cat.colour.id,
+        'health_status': cat.health_status.id,
+        'castrated': cat.castrated,
+        'vaccinated': cat.vaccinated,
+        'dewormed': cat.dewormed,
+        'health_log': cat.health_log,
+        'offline': false,
+      });
+      await _storage.set('cats', cats);
+
       notifyListeners();
       return [
         true,

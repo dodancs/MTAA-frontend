@@ -19,6 +19,7 @@ class Cat {
   bool adoptive;
   List<String> pictures;
   int commentsNum;
+  bool offline;
 
   Cat({
     this.uuid,
@@ -36,5 +37,6 @@ class Cat {
     @required this.dewormed,
     @required this.colour,
     @required this.health_log,
+    @required this.offline,
   });
 }

@@ -10,10 +10,10 @@ import 'package:provider/provider.dart';
 
 class PictureListInput extends StatefulWidget {
   List<String> pictures;
-
+  final bool enabled;
   final Function onChange;
 
-  PictureListInput(this.pictures, this.onChange);
+  PictureListInput(this.pictures, this.onChange, {this.enabled});
 
   @override
   _PictureListInputState createState() => _PictureListInputState();
@@ -94,12 +94,17 @@ class _PictureListInputState extends State<PictureListInput> {
           child: Container(
             width: MediaQuery.of(context).size.width,
             height: MediaQuery.of(context).size.width * 0.5,
+            foregroundDecoration: _loading || widget.enabled == false
+                ? BoxDecoration(color: Colors.black26)
+                : null,
             child: SingleChildScrollView(
               scrollDirection: Axis.horizontal,
               child: Row(
                 children: <Widget>[
                   InkWell(
-                    onTap: _loading ? null : _addPicture,
+                    onTap: _loading || widget.enabled == false
+                        ? null
+                        : _addPicture,
                     child: Container(
                       width: MediaQuery.of(context).size.width * 0.5,
                       height: MediaQuery.of(context).size.width * 0.5,
@@ -129,7 +134,9 @@ class _PictureListInputState extends State<PictureListInput> {
                                 child: ClipRRect(
                                   borderRadius: BorderRadius.circular(10),
                                   child: InkWell(
-                                    onTap: () => _deletePicture(p),
+                                    onTap: () => widget.enabled == false
+                                        ? null
+                                        : _deletePicture(p),
                                     child: Container(
                                       width: 40,
                                       height: 40,
