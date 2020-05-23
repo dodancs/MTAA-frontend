@@ -3,13 +3,16 @@ import 'package:CiliCat/components/AppTitleBack.dart';
 import 'package:CiliCat/components/Heading1.dart';
 import 'package:CiliCat/components/Heading2.dart';
 import 'package:CiliCat/components/InfoSection.dart';
+import 'package:CiliCat/components/OkDialog.dart';
 import 'package:CiliCat/components/ShimmerImage.dart';
 import 'package:CiliCat/models/Cat.dart';
 import 'package:CiliCat/providers/AuthProvider.dart';
 import 'package:CiliCat/providers/CatsProvider.dart';
+import 'package:CiliCat/providers/StorageProvider.dart';
 import 'package:CiliCat/screens/CatEditPage.dart';
 import 'package:CiliCat/settings.dart';
 import 'package:carousel_slider/carousel_slider.dart';
+import 'package:connectivity/connectivity.dart';
 import 'package:flare_flutter/flare_actor.dart';
 import 'package:flare_flutter/flare_controls.dart';
 import 'package:flutter/material.dart';
@@ -34,6 +37,7 @@ class _CatDetailPageState extends State<CatDetailPage> {
 
   @override
   Widget build(BuildContext context) {
+    final storageProvider = Provider.of<StorageProvider>(context);
     final catsProvider = Provider.of<CatsProvider>(context);
     final authProvider = Provider.of<AuthProvider>(context);
 
@@ -52,7 +56,7 @@ class _CatDetailPageState extends State<CatDetailPage> {
     if (_cat == null) return Container();
 
     return WillPopScope(
-      onWillPop: _backPressed,
+      onWillPop: () async => await _backPressed(),
       child: Scaffold(
         appBar: AppTitleBack(callback: _backPressed),
         body: SingleChildScrollView(
@@ -313,6 +317,14 @@ class _CatDetailPageState extends State<CatDetailPage> {
         floatingActionButton: authProvider.isAdmin
             ? FloatingActionButton(
                 onPressed: () {
+                  if (storageProvider.connectivity == ConnectivityResult.none) {
+                    showDialog(
+                      context: context,
+                      builder: (BuildContext context) => OkDialog(
+                          'Táto funkcionalita nie je podporovaná v režime offline!'),
+                    );
+                    return;
+                  }
                   Navigator.push(
                     context,
                     MaterialPageRoute(

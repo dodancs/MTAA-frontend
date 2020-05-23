@@ -2,12 +2,15 @@ import 'package:CiliCat/components/AdoptionToggle.dart';
 import 'package:CiliCat/components/AppTitleRefresh.dart';
 import 'package:CiliCat/components/FilterDialog.dart';
 import 'package:CiliCat/components/MainMenu.dart';
+import 'package:CiliCat/components/OkDialog.dart';
 import 'package:CiliCat/models/Breed.dart';
 import 'package:CiliCat/models/Colour.dart';
 import 'package:CiliCat/models/HealthStatus.dart';
 import 'package:CiliCat/providers/SettingsProvider.dart';
+import 'package:CiliCat/providers/StorageProvider.dart';
 import 'package:CiliCat/screens/CatEditPage.dart';
 import 'package:CiliCat/settings.dart';
+import 'package:connectivity/connectivity.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:CiliCat/components/CatCard.dart';
@@ -94,6 +97,7 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
+    final storageProvider = Provider.of<StorageProvider>(context);
     final authProvider = Provider.of<AuthProvider>(context);
     final catsProvider = Provider.of<CatsProvider>(context);
     final cats = catsProvider.cats;
@@ -142,6 +146,18 @@ class _HomePageState extends State<HomePage> {
                     AdoptionToggle(
                       state: catsProvider.filter_adoptive,
                       callback: (state) {
+                        if (storageProvider.connectivity ==
+                            ConnectivityResult.none) {
+                          showDialog(
+                            context: context,
+                            builder: (BuildContext context) => OkDialog(
+                                'Táto funkcionalita nie je podporovaná v režime offline!'),
+                          );
+                          setState(() {
+                            catsProvider.filter_adoptive = true;
+                          });
+                          return;
+                        }
                         Provider.of<CatsProvider>(context, listen: false)
                             .setFilter(filter: 'adoptive', value: state);
                       },
@@ -150,6 +166,15 @@ class _HomePageState extends State<HomePage> {
                     MaterialButton(
                       child: Text('FILTER'),
                       onPressed: () {
+                        if (storageProvider.connectivity ==
+                            ConnectivityResult.none) {
+                          showDialog(
+                            context: context,
+                            builder: (BuildContext context) => OkDialog(
+                                'Táto funkcionalita nie je podporovaná v režime offline!'),
+                          );
+                          return;
+                        }
                         showDialog(
                           context: context,
                           builder: (BuildContext context) => FilterDialog(
@@ -249,6 +274,14 @@ class _HomePageState extends State<HomePage> {
       floatingActionButton: authProvider.isAdmin
           ? FloatingActionButton(
               onPressed: () {
+                if (storageProvider.connectivity == ConnectivityResult.none) {
+                  showDialog(
+                    context: context,
+                    builder: (BuildContext context) => OkDialog(
+                        'Táto funkcionalita nie je podporovaná v režime offline!'),
+                  );
+                  return;
+                }
                 Navigator.push(
                   context,
                   MaterialPageRoute(
