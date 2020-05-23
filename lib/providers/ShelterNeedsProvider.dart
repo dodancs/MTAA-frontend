@@ -158,6 +158,7 @@ class ShelterneedsProvider with ChangeNotifier {
       ]);
 
       dynamic needs = await _storage.get('needs');
+      if (needs['needs'] == null) needs['needs'] = [];
       needs['needs'].add({
         'name': name,
         'category': category,
